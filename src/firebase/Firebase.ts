@@ -36,7 +36,6 @@ export class Firebase {
   private readonly _auth: Auth;
 
   constructor(configuration: FirebaseConfiguration) {
-    console.log(configuration);
     const app = initializeApp(configuration);
     this._firestore = getFirestore(app);
     this._auth = getAuth(app);

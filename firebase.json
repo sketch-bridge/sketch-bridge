@@ -1,0 +1,19 @@
+{
+  "hosting": {
+    "rewrites": [
+      {
+        "source": "/build/**",
+        "run": {
+          "serviceId": "arduino-compile-server",
+          "region": "asia-northeast1"
+        }
+      }
+    ]
+  },
+  "emulators": {
+    "hosting": {
+      "port": 5173,
+      "host": "0.0.0.0"
+    }
+  }
+}

@@ -1,5 +1,12 @@
 import { Firebase, firebaseConfigurationByImportMetaEnv } from './Firebase.ts';
-import { createContext, FC, ReactNode, useState, useEffect } from 'react';
+import {
+  createContext,
+  FC,
+  ReactNode,
+  useState,
+  useEffect,
+  useContext,
+} from 'react';
 import { User } from 'firebase/auth';
 
 interface Props {
@@ -8,11 +15,12 @@ interface Props {
 
 interface FirebaseAuthContextState {
   user: User | null;
+  firebase: Firebase;
 }
 
 const firebaseInstance = new Firebase(firebaseConfigurationByImportMetaEnv);
 
-const firebaseAuthContext = createContext<FirebaseAuthContextState | undefined>(
+const FirebaseAuthContext = createContext<FirebaseAuthContextState | undefined>(
   undefined
 );
 
@@ -21,17 +29,29 @@ export const FirebaseAuthProvider: FC<Props> = ({ children }) => {
 
   const value = {
     user,
+    firebase: firebaseInstance,
   };
 
   useEffect(() => {
     return firebaseInstance.auth.onAuthStateChanged((user) => {
+      console.log('onAuthStateChanged', user);
       setUser(user);
     });
   }, []);
 
   return (
-    <firebaseAuthContext.Provider value={value}>
+    <FirebaseAuthContext.Provider value={value}>
       {children}
-    </firebaseAuthContext.Provider>
+    </FirebaseAuthContext.Provider>
   );
 };
+
+export function useFirebaseAuth() {
+  const context = useContext(FirebaseAuthContext);
+  if (context === undefined) {
+    throw new Error(
+      'useFirebaseAuth must be used within a FirebaseAuthProvider'
+    );
+  }
+  return context;
+}
