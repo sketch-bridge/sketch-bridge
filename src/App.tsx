@@ -102,11 +102,11 @@ function App() {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${idToken}`,
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/x-www-form-urlencoded',
         },
         body: new URLSearchParams({
           projectId: currentProject.id,
-        }),
+        }).toString(),
       });
       console.log('response', response);
     },
