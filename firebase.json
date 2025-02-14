@@ -1,12 +1,10 @@
 {
   "hosting": {
+    "public":  "dist",
     "rewrites": [
       {
-        "source": "/build/**",
-        "run": {
-          "serviceId": "arduino-compile-server",
-          "region": "asia-northeast1"
-        }
+        "source": "/build",
+        "destination": "http://localhost:8080/build"
       }
     ]
   },

@@ -98,7 +98,7 @@ function App() {
         throw new Error('currentProject is null');
       }
       const idToken = await firebaseAuth.user.getIdToken();
-      const response = await fetch(`/build`, {
+      const response = await fetch(`http://localhost:8080/build`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${idToken}`,
