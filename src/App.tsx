@@ -5,6 +5,7 @@ import {
   Button,
   FormControl,
   MenuItem,
+  Paper,
   Select,
   Toolbar,
   Typography,
@@ -197,24 +198,45 @@ function App() {
           </AppBar>
         </Box>
         <Box sx={{ height: 'calc(100vh - 200px -  64px)' }}>
-          <Editor
-            height="100%"
-            defaultLanguage="cpp"
-            value={code}
-            options={{
-              minimap: { enabled: false },
-              wordWrap: 'off',
-              readOnly: firebaseAuth.user === null,
-            }}
-            onChange={onChangeCode}
-          />
+          <Paper
+            elevation={3}
+            sx={{ height: '100%', margin: '8px', boxSizing: 'border-box' }}
+          >
+            <Editor
+              height="100%"
+              defaultLanguage="cpp"
+              value={code}
+              options={{
+                minimap: { enabled: false },
+                wordWrap: 'off',
+                readOnly: firebaseAuth.user === null,
+              }}
+              onChange={onChangeCode}
+            />
+          </Paper>
         </Box>
-        <Box
-          sx={{ height: '200px', boxSizing: 'border-box', overflowY: 'auto' }}
-        >
-          <pre>
-            <code>{output}</code>
-          </pre>
+        <Box sx={{ height: '178px', paddingTop: '8px' }}>
+          <Paper
+            elevation={3}
+            sx={{
+              height: '100%',
+              margin: '8px',
+              boxSizing: 'border-box',
+            }}
+          >
+            <Typography
+              variant="body2"
+              component="pre"
+              sx={{
+                height: '100%',
+                overflowY: 'auto',
+                padding: '8px',
+                boxSizing: 'border-box',
+              }}
+            >
+              {output}
+            </Typography>
+          </Paper>
         </Box>
       </Box>
       <FlashDialog

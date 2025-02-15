@@ -130,7 +130,7 @@ export function FlashDialog(props: FlashDialogProps): ReactElement {
       setMessage(`Flashing completed`);
     };
     void flash();
-  }, []);
+  }, [hex]);
 
   const parseIntelHex = (hexText: string) => {
     let data = [];
@@ -152,14 +152,18 @@ export function FlashDialog(props: FlashDialogProps): ReactElement {
   };
 
   return (
-    <Dialog open={props.isOpen}>
+    <Dialog open={props.isOpen} fullWidth={true} maxWidth="xs">
       <DialogTitle>Flash Firmware</DialogTitle>
       <DialogContent>{message}</DialogContent>
       <DialogActions>
-        <Button disabled={isPreparing} onClick={onClickCancel}>
+        <Button disabled={isPreparing || isFlashing} onClick={onClickCancel}>
           Close
         </Button>
-        <Button disabled={isPreparing} type="submit" onClick={onClickFlash}>
+        <Button
+          disabled={isPreparing || isFlashing}
+          type="submit"
+          onClick={onClickFlash}
+        >
           Flash
         </Button>
       </DialogActions>
