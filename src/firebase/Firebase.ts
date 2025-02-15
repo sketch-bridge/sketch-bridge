@@ -1,5 +1,6 @@
 import { Auth, getAuth } from 'firebase/auth';
 import { Firestore, getFirestore } from 'firebase/firestore';
+import { getStorage, FirebaseStorage } from 'firebase/storage';
 import { initializeApp } from 'firebase/app';
 
 interface FirebaseConfiguration {
@@ -34,11 +35,13 @@ export const firebaseConfigurationByImportMetaEnv: FirebaseConfiguration = {
 export class Firebase {
   private readonly _firestore: Firestore;
   private readonly _auth: Auth;
+  private readonly _storage: FirebaseStorage;
 
   constructor(configuration: FirebaseConfiguration) {
     const app = initializeApp(configuration);
     this._firestore = getFirestore(app);
     this._auth = getAuth(app);
+    this._storage = getStorage(app);
   }
 
   get firestore(): Firestore {
@@ -47,5 +50,9 @@ export class Firebase {
 
   get auth(): Auth {
     return this._auth;
+  }
+
+  get storage(): FirebaseStorage {
+    return this._storage;
   }
 }

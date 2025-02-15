@@ -19,14 +19,21 @@ import {
 } from './firebase/FirestoreHooks.ts';
 import { MouseEventHandler, useCallback, useEffect, useState } from 'react';
 import { useDebounce } from './DebounceHook.ts';
+import { FlashDialog } from './flash/FlashDialog.tsx';
+import { useBuilder } from './build/BuildHook.ts';
 
 function App() {
   const firebaseAuth = useFirebaseAuth();
 
   const { projects, updateProject } = useProjects();
   const { userData, updateUserData } = useUserData();
+  const { isBuilding, output, build, buildResult } = useBuilder();
 
   const [code, setCode] = useState<string>('');
+  const [isOpenFlashDialog, setIsOpenFlashDialog] = useState<boolean>(false);
+  const [buildMode, setBuildMode] = useState<'build_only' | 'for_flash'>(
+    'build_only'
+  );
 
   let currentProject: Project | null = null;
   if (userData !== null) {
@@ -97,80 +104,125 @@ function App() {
       if (currentProject === null) {
         throw new Error('currentProject is null');
       }
-      const idToken = await firebaseAuth.user.getIdToken();
-      const response = await fetch(`http://localhost:8080/build`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${idToken}`,
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: new URLSearchParams({
-          projectId: currentProject.id,
-        }).toString(),
-      });
-      console.log('response', response);
+      setBuildMode('build_only');
+      await build(currentProject);
     },
     [currentProject, firebaseAuth]
   );
 
+  const onClickFlash: MouseEventHandler<HTMLButtonElement> = useCallback(
+    async (event) => {
+      event.preventDefault();
+      if (firebaseAuth.user === null) {
+        throw new Error('user is null');
+      }
+      if (currentProject === null) {
+        throw new Error('currentProject is null');
+      }
+      setBuildMode('for_flash');
+      await build(currentProject);
+    },
+    [currentProject, firebaseAuth]
+  );
+
+  const onCloseFlashDialog = useCallback(() => {
+    setIsOpenFlashDialog(false);
+  }, []);
+
+  useEffect(() => {
+    if (isBuilding) {
+      return;
+    }
+    if (buildResult === 'success' && buildMode === 'for_flash') {
+      setIsOpenFlashDialog(true);
+    }
+  }, [isBuilding, buildResult, buildMode]);
+
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-      <Box sx={{ flexGrow: 1 }}>
-        <AppBar position="static">
-          <Toolbar>
-            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-              Sketch Bridge
-            </Typography>
-            {firebaseAuth.user !== null && currentProject !== null && (
-              <FormControl size="small">
-                <Select
-                  value={currentProject.id}
-                  variant="outlined"
-                  sx={{ backgroundColor: 'var(--AppBar-color)' }}
+    <>
+      <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+        <Box sx={{ flexGrow: 1 }}>
+          <AppBar position="static">
+            <Toolbar>
+              <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+                Sketch Bridge
+              </Typography>
+              {firebaseAuth.user !== null && currentProject !== null && (
+                <FormControl size="small">
+                  <Select
+                    value={currentProject.id}
+                    variant="outlined"
+                    sx={{ backgroundColor: 'var(--AppBar-color)' }}
+                  >
+                    {projects.map((project) => (
+                      <MenuItem
+                        key={`projects-${project.id}`}
+                        value={project.id}
+                      >
+                        {project.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              )}
+              {firebaseAuth.user !== null && (
+                <Button
+                  color="inherit"
+                  onClick={onClickBuild}
+                  loading={isBuilding}
                 >
-                  {projects.map((project) => (
-                    <MenuItem key={`projects-${project.id}`} value={project.id}>
-                      {project.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            )}
-            {firebaseAuth.user !== null && (
-              <Button color="inherit" onClick={onClickBuild}>
-                Build
-              </Button>
-            )}
-            {firebaseAuth.user !== null && (
-              <Button color="inherit">Flash</Button>
-            )}
-            {firebaseAuth.user === null && (
-              <Button color="inherit" onClick={onClickLogin}>
-                Login
-              </Button>
-            )}
-            {firebaseAuth.user !== null && (
-              <Button color="inherit" onClick={onClickLogout}>
-                Logout
-              </Button>
-            )}
-          </Toolbar>
-        </AppBar>
+                  Build
+                </Button>
+              )}
+              {firebaseAuth.user !== null && (
+                <Button
+                  color="inherit"
+                  onClick={onClickFlash}
+                  loading={isBuilding}
+                >
+                  Flash
+                </Button>
+              )}
+              {firebaseAuth.user === null && (
+                <Button color="inherit" onClick={onClickLogin}>
+                  Login
+                </Button>
+              )}
+              {firebaseAuth.user !== null && (
+                <Button color="inherit" onClick={onClickLogout}>
+                  Logout
+                </Button>
+              )}
+            </Toolbar>
+          </AppBar>
+        </Box>
+        <Box sx={{ height: 'calc(100vh - 200px -  64px)' }}>
+          <Editor
+            height="100%"
+            defaultLanguage="cpp"
+            value={code}
+            options={{
+              minimap: { enabled: false },
+              wordWrap: 'off',
+              readOnly: firebaseAuth.user === null,
+            }}
+            onChange={onChangeCode}
+          />
+        </Box>
+        <Box
+          sx={{ height: '200px', boxSizing: 'border-box', overflowY: 'auto' }}
+        >
+          <pre>
+            <code>{output}</code>
+          </pre>
+        </Box>
       </Box>
-      <Box sx={{ height: 'calc(100vh - 64px)' }}>
-        <Editor
-          height="100%"
-          defaultLanguage="cpp"
-          value={code}
-          options={{
-            minimap: { enabled: false },
-            wordWrap: 'off',
-            readOnly: firebaseAuth.user === null,
-          }}
-          onChange={onChangeCode}
-        />
-      </Box>
-    </Box>
+      <FlashDialog
+        isOpen={isOpenFlashDialog}
+        onClose={onCloseFlashDialog}
+        project={currentProject}
+      />
+    </>
   );
 }
 
