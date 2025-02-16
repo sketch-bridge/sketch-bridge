@@ -4,7 +4,10 @@
     "rewrites": [
       {
         "source": "/build",
-        "destination": "http://localhost:8080/build"
+        "run": {
+          "serviceId": "arduino-compile-server",
+          "region": "asia-northeast1"
+        }
       }
     ]
   },
