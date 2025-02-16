@@ -36,4 +36,4 @@ jobs:
           SKETCH_BRIDGE_FIREBASE_MEASUREMENT_ID: ${{ secrets.PRODUCTION_SKETCH_BRIDGE_FIREBASE_MEASUREMENT_ID }}
           NODE_OPTIONS: --max_old_space_size=8192
       - name: Deploy to Firebase
-        run: firebase deploy --only hosting --token ${{ secrets.FIREBASE_TOKEN }}
+        run: firebase deploy --only hosting --token ${{ secrets.FIREBASE_TOKEN }} --project ${{ secrets.PRODUCTION_SKETCH_BRIDGE_FIREBASE_PROJECT_ID }}
