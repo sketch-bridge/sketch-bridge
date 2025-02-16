@@ -1,0 +1,39 @@
+name: Deploy for Production
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+jobs:
+  deploy:
+    name: Build and Deploy
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20.x]
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+        with:
+          ref: develop
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Install Firebase Tools
+        run: npm install -g firebase-tools
+      - name: Install dependencies
+        run: yarn install
+      - name: Build
+        run: yarn build
+        env:
+          SKETCH_BRIDGE_FIREBASE_API_KEY: ${{ secrets.PRODUCTION_SKETCH_BRIDGE_FIREBASE_API_KEY }}
+          SKETCH_BRIDGE_FIREBASE_APP_ID: ${{ secrets.PRODUCTION_SKETCH_BRIDGE_FIREBASE_APP_ID }}
+          SKETCH_BRIDGE_FIREBASE_AUTH_DOMAIN: ${{ secrets.PRODUCTION_SKETCH_BRIDGE_FIREBASE_AUTH_DOMAIN }}
+          SKETCH_BRIDGE_FIREBASE_MESSAGE_SENDER_ID: ${{ secrets.PRODUCTION_SKETCH_BRIDGE_FIREBASE_MESSAGE_SENDER_ID }}
+          SKETCH_BRIDGE_FIREBASE_PROJECT_ID: ${{ secrets.PRODUCTION_SKETCH_BRIDGE_FIREBASE_PROJECT_ID }}
+          SKETCH_BRIDGE_FIREBASE_STORAGE_BUCKET: ${{ secrets.PRODUCTION_SKETCH_BRIDGE_FIREBASE_STORAGE_BUCKET }}
+          SKETCH_BRIDGE_FIREBASE_MEASUREMENT_ID: ${{ secrets.PRODUCTION_SKETCH_BRIDGE_FIREBASE_MEASUREMENT_ID }}
+          NODE_OPTIONS: --max_old_space_size=8192
+      - name: Deploy to Firebase
+        run: firebase deploy --only hosting --token ${{ secrets.FIREBASE_TOKEN }} --project staging
