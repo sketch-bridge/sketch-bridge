@@ -101,11 +101,18 @@ export const useUserData = () => {
   };
 };
 
+export type Library = {
+  name: string;
+  version: string;
+  sentence: string;
+};
+
 export type Project = {
   id: string;
   name: string;
   code: string;
   uid: string;
+  libraries: Library[];
   createdAt: Date;
   updatedAt: Date;
 };
@@ -137,6 +144,7 @@ export const useProjects = () => {
         name: 'New Project',
         code: '',
         uid: firebaseAuth.user.uid,
+        libraries: [],
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -154,6 +162,7 @@ export const useProjects = () => {
           name: doc.data().name,
           code: doc.data().code,
           uid: doc.data().uid,
+          libraries: doc.data().libraries || [],
           createdAt: doc.data().createdAt.toDate(),
           updatedAt: doc.data().updatedAt.toDate(),
         });
