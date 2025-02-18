@@ -186,11 +186,7 @@ function App() {
                 </FormControl>
               )}
               {firebaseAuth.user !== null && (
-                <Button
-                  color="inherit"
-                  onClick={onClickLibraries}
-                  loading={isBuilding}
-                >
+                <Button color="inherit" onClick={onClickLibraries}>
                   Libraries
                 </Button>
               )}

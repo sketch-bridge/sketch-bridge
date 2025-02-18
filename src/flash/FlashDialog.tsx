@@ -11,6 +11,7 @@ import { useFirebaseAuth } from '../firebase/FirebaseAuthProvider.tsx';
 import { ref, getBlob } from 'firebase/storage';
 import { Optiboot } from './Optiboot.ts';
 import { isError } from '../FailableResult.ts';
+import { useNotification } from '../notifications/NotificationProvider.tsx';
 
 type FlashDialogProps = {
   isOpen: boolean;
@@ -25,6 +26,7 @@ export function FlashDialog(props: FlashDialogProps): ReactElement {
   const [isFlashing, setIsFlashing] = useState<boolean>(false);
 
   const firebaseAuth = useFirebaseAuth();
+  const { showNotification } = useNotification();
 
   useEffect(() => {
     if (!props.isOpen) {
@@ -128,6 +130,7 @@ export function FlashDialog(props: FlashDialogProps): ReactElement {
       }
       setIsFlashing(false);
       setMessage(`Flashing completed`);
+      showNotification('Flashing completed', 'success');
     };
     void flash();
   }, [hex]);
