@@ -7,11 +7,14 @@ import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 import { FirebaseAuthProvider } from './firebase/FirebaseAuthProvider.tsx';
+import { NotificationProvider } from './notifications/NotificationProvider.tsx';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <FirebaseAuthProvider>
-      <App />
+      <NotificationProvider>
+        <App />
+      </NotificationProvider>
     </FirebaseAuthProvider>
   </StrictMode>
 );
