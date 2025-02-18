@@ -22,11 +22,12 @@ import { MouseEventHandler, useCallback, useEffect, useState } from 'react';
 import { useDebounce } from './DebounceHook.ts';
 import { FlashDialog } from './flash/FlashDialog.tsx';
 import { useBuilder } from './build/BuildHook.ts';
+import { LibrariesDialog } from './build/LibrariesDialog.tsx';
 
 function App() {
   const firebaseAuth = useFirebaseAuth();
 
-  const { projects, updateProject } = useProjects();
+  const { projects, updateProject, refresh } = useProjects();
   const { userData, updateUserData } = useUserData();
   const { isBuilding, output, build, buildResult } = useBuilder();
 
@@ -35,6 +36,8 @@ function App() {
   const [buildMode, setBuildMode] = useState<'build_only' | 'for_flash'>(
     'build_only'
   );
+  const [isOpenLibrariesDialog, setIsOpenLibrariesDialog] =
+    useState<boolean>(false);
 
   let currentProject: Project | null = null;
   if (userData !== null) {
@@ -126,9 +129,25 @@ function App() {
     [currentProject, firebaseAuth]
   );
 
+  const onClickLibraries: MouseEventHandler<HTMLButtonElement> = useCallback(
+    async (event) => {
+      event.preventDefault();
+      setIsOpenLibrariesDialog(true);
+    },
+    [currentProject, firebaseAuth]
+  );
+
   const onCloseFlashDialog = useCallback(() => {
     setIsOpenFlashDialog(false);
   }, []);
+
+  const onCloseLibrariesDialog = useCallback(() => {
+    const closeLibrariesDialog = async () => {
+      await refresh();
+      setIsOpenLibrariesDialog(false);
+    };
+    void closeLibrariesDialog();
+  }, [firebaseAuth]);
 
   useEffect(() => {
     if (isBuilding) {
@@ -149,7 +168,7 @@ function App() {
                 Sketch Bridge
               </Typography>
               {firebaseAuth.user !== null && currentProject !== null && (
-                <FormControl size="small">
+                <FormControl size="small" sx={{ marginRight: '16px' }}>
                   <Select
                     value={currentProject.id}
                     variant="outlined"
@@ -165,6 +184,15 @@ function App() {
                     ))}
                   </Select>
                 </FormControl>
+              )}
+              {firebaseAuth.user !== null && (
+                <Button
+                  color="inherit"
+                  onClick={onClickLibraries}
+                  loading={isBuilding}
+                >
+                  Libraries
+                </Button>
               )}
               {firebaseAuth.user !== null && (
                 <Button
@@ -242,6 +270,11 @@ function App() {
       <FlashDialog
         isOpen={isOpenFlashDialog}
         onClose={onCloseFlashDialog}
+        project={currentProject}
+      />
+      <LibrariesDialog
+        isOpen={isOpenLibrariesDialog}
+        onClose={onCloseLibrariesDialog}
         project={currentProject}
       />
     </>
