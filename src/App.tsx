@@ -23,6 +23,11 @@ import { useDebounce } from './DebounceHook.ts';
 import { FlashDialog } from './flash/FlashDialog.tsx';
 import { useBuilder } from './build/BuildHook.ts';
 import { LibrariesDialog } from './build/LibrariesDialog.tsx';
+import BuildIcon from '@mui/icons-material/Build';
+import FlashOnIcon from '@mui/icons-material/FlashOn';
+import LogoutIcon from '@mui/icons-material/Logout';
+import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
+import LoginIcon from '@mui/icons-material/Login';
 
 function App() {
   const firebaseAuth = useFirebaseAuth();
@@ -186,7 +191,11 @@ function App() {
                 </FormControl>
               )}
               {firebaseAuth.user !== null && (
-                <Button color="inherit" onClick={onClickLibraries}>
+                <Button
+                  color="inherit"
+                  onClick={onClickLibraries}
+                  startIcon={<LibraryBooksIcon />}
+                >
                   Libraries
                 </Button>
               )}
@@ -195,6 +204,7 @@ function App() {
                   color="inherit"
                   onClick={onClickBuild}
                   loading={isBuilding}
+                  startIcon={<BuildIcon />}
                 >
                   Build
                 </Button>
@@ -204,17 +214,26 @@ function App() {
                   color="inherit"
                   onClick={onClickFlash}
                   loading={isBuilding}
+                  startIcon={<FlashOnIcon />}
                 >
                   Flash
                 </Button>
               )}
               {firebaseAuth.user === null && (
-                <Button color="inherit" onClick={onClickLogin}>
+                <Button
+                  color="inherit"
+                  onClick={onClickLogin}
+                  startIcon={<LoginIcon />}
+                >
                   Login
                 </Button>
               )}
               {firebaseAuth.user !== null && (
-                <Button color="inherit" onClick={onClickLogout}>
+                <Button
+                  color="inherit"
+                  onClick={onClickLogout}
+                  startIcon={<LogoutIcon />}
+                >
                   Logout
                 </Button>
               )}
