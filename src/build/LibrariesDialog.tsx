@@ -21,7 +21,11 @@ import {
   TextField,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Library, Project, useProjects } from '../firebase/FirestoreHooks.ts';
+import {
+  Library,
+  Project,
+  useProjects,
+} from '../firebase/ProjectsProvider.tsx';
 
 type LibrariesDialogProps = {
   isOpen: boolean;

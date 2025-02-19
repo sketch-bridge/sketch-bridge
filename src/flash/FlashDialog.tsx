@@ -6,12 +6,12 @@ import {
   DialogContent,
   DialogTitle,
 } from '@mui/material';
-import { Project } from '../firebase/FirestoreHooks.ts';
 import { useFirebaseAuth } from '../firebase/FirebaseAuthProvider.tsx';
 import { ref, getBlob } from 'firebase/storage';
 import { Optiboot } from './Optiboot.ts';
 import { isError } from '../FailableResult.ts';
-import { useNotification } from '../notifications/NotificationProvider.tsx';
+import { useNotification } from '../utils/NotificationProvider.tsx';
+import { Project } from '../firebase/ProjectsProvider.tsx';
 
 type FlashDialogProps = {
   isOpen: boolean;

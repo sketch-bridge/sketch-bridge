@@ -1,7 +1,7 @@
 import { useFirebaseAuth } from '../firebase/FirebaseAuthProvider.tsx';
 import { useState } from 'react';
-import { Project } from '../firebase/FirestoreHooks.ts';
-import { useNotification } from '../notifications/NotificationProvider.tsx';
+import { useNotification } from '../utils/NotificationProvider.tsx';
+import { Project } from '../firebase/ProjectsProvider.tsx';
 
 export const useBuilder = () => {
   const firebaseAuth = useFirebaseAuth();
