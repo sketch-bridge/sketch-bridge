@@ -2,6 +2,7 @@ import { Auth, getAuth } from 'firebase/auth';
 import { Firestore, getFirestore } from 'firebase/firestore';
 import { getStorage, FirebaseStorage } from 'firebase/storage';
 import { initializeApp } from 'firebase/app';
+import { Analytics, getAnalytics } from 'firebase/analytics';
 
 interface FirebaseConfiguration {
   apiKey: string | undefined;
@@ -36,12 +37,14 @@ export class Firebase {
   private readonly _firestore: Firestore;
   private readonly _auth: Auth;
   private readonly _storage: FirebaseStorage;
+  private readonly _analytics: Analytics;
 
   constructor(configuration: FirebaseConfiguration) {
     const app = initializeApp(configuration);
     this._firestore = getFirestore(app);
     this._auth = getAuth(app);
     this._storage = getStorage(app);
+    this._analytics = getAnalytics(app);
   }
 
   get firestore(): Firestore {
@@ -54,5 +57,9 @@ export class Firebase {
 
   get storage(): FirebaseStorage {
     return this._storage;
+  }
+
+  get analytics(): Analytics {
+    return this._analytics;
   }
 }

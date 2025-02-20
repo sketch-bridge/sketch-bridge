@@ -114,7 +114,8 @@ export const ProjectsProvider = ({ children }: Props) => {
     data: Partial<Omit<Project, 'id'>>
   ) => {
     if (firebaseAuth.user === null) {
-      throw new Error('User is not signed in');
+      console.warn('User is not signed in');
+      return;
     }
 
     const projectsRef = collection(firestore, 'versions', 'v1', 'projects');

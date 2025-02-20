@@ -10,17 +10,20 @@ import { FirebaseAuthProvider } from './firebase/FirebaseAuthProvider.tsx';
 import { NotificationProvider } from './utils/NotificationProvider.tsx';
 import { UserDataProvider } from './firebase/UserDataProvider.tsx';
 import { ProjectsProvider } from './firebase/ProjectsProvider.tsx';
+import { LoggingProvider } from './firebase/LoggingProvider.tsx';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <FirebaseAuthProvider>
-      <NotificationProvider>
-        <UserDataProvider>
-          <ProjectsProvider>
-            <App />
-          </ProjectsProvider>
-        </UserDataProvider>
-      </NotificationProvider>
+      <LoggingProvider>
+        <NotificationProvider>
+          <UserDataProvider>
+            <ProjectsProvider>
+              <App />
+            </ProjectsProvider>
+          </UserDataProvider>
+        </NotificationProvider>
+      </LoggingProvider>
     </FirebaseAuthProvider>
   </StrictMode>
 );
