@@ -26,6 +26,7 @@ import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import { ProjectsDialog } from './projects/ProjectsDialog.tsx';
 import { useUserData } from './firebase/UserDataProvider.tsx';
 import { Project, useProjects } from './firebase/ProjectsProvider.tsx';
+import { useNotification } from './utils/NotificationProvider.tsx';
 
 function App() {
   const firebaseAuth = useFirebaseAuth();
@@ -33,6 +34,7 @@ function App() {
   const { projects, updateProject, refresh } = useProjects();
   const { userData, updateUserData } = useUserData();
   const { isBuilding, output, build, buildResult } = useBuilder();
+  const { showNotification } = useNotification();
 
   const [code, setCode] = useState<string>('');
   const [isOpenFlashDialog, setIsOpenFlashDialog] = useState<boolean>(false);
@@ -97,6 +99,11 @@ function App() {
   const debouncedProjectName = useDebounce(projectName, 500);
   useEffect(() => {
     if (currentProject !== null) {
+      if (debouncedProjectName === '') {
+        setProjectName(currentProject.name);
+        showNotification('Project name cannot be empty.', 'error');
+        return;
+      }
       void updateProject(currentProject.id, {
         name: debouncedProjectName,
       });
