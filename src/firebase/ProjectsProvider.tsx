@@ -34,7 +34,10 @@ interface Props {
 interface ProjectsContextState {
   projects: Project[];
   refresh: () => Promise<void>;
-  createProject: (name: string) => Promise<Project>;
+  createProject: (
+    name: string,
+    data?: Partial<Omit<Project, 'id'>>
+  ) => Promise<Project>;
   updateProject: (
     id: string,
     data: Partial<Omit<Project, 'id'>>
@@ -127,7 +130,10 @@ export const ProjectsProvider = ({ children }: Props) => {
     );
   };
 
-  const createProject = async (name: string): Promise<Project> => {
+  const createProject = async (
+    name: string,
+    data?: Partial<Omit<Project, 'id'>>
+  ): Promise<Project> => {
     if (firebaseAuth.user === null) {
       throw new Error('User is not signed in');
     }
@@ -135,9 +141,9 @@ export const ProjectsProvider = ({ children }: Props) => {
     const projectsRef = collection(firestore, 'versions', 'v1', 'projects');
     const project = {
       name,
-      code: '',
+      code: data?.code || '',
       uid: firebaseAuth.user.uid,
-      libraries: [],
+      libraries: data?.libraries || [],
       createdAt: new Date(),
       updatedAt: new Date(),
     };
