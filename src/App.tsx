@@ -23,6 +23,7 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 import LoginIcon from '@mui/icons-material/Login';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { ProjectsDialog } from './projects/ProjectsDialog.tsx';
 import { useUserData } from './firebase/UserDataProvider.tsx';
 import { Project, useProjects } from './firebase/ProjectsProvider.tsx';
@@ -189,6 +190,31 @@ function App() {
     [projects, firebaseAuth]
   );
 
+  const onClickExport: MouseEventHandler<HTMLButtonElement> = useCallback(
+    async (event) => {
+      event.preventDefault();
+      if (currentProject === null) {
+        throw new Error('currentProject is null');
+      }
+      const json = JSON.stringify({
+        version: 1,
+        name: currentProject.name,
+        code: currentProject.code,
+        libraries: currentProject.libraries,
+      });
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `sketch-bridge-project-${currentProject.id}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    },
+    [currentProject]
+  );
+
   const onCloseFlashDialog = useCallback(() => {
     setIsOpenFlashDialog(false);
   }, []);
@@ -240,6 +266,15 @@ function App() {
                   startIcon={<AccountTreeIcon />}
                 >
                   Projects
+                </Button>
+              )}
+              {firebaseAuth.user !== null && (
+                <Button
+                  color="inherit"
+                  onClick={onClickExport}
+                  startIcon={<FileDownloadIcon />}
+                >
+                  Export
                 </Button>
               )}
               {firebaseAuth.user !== null && (
