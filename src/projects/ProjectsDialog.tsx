@@ -16,6 +16,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { useUserData } from '../firebase/UserDataProvider.tsx';
 import { Project, useProjects } from '../firebase/ProjectsProvider.tsx';
 import { useConfirmDialog } from '../utils/ConfirmDialog.tsx';
+import { useNotification } from '../utils/NotificationProvider.tsx';
 
 type ProjectsDialogProps = {
   isOpen: boolean;
@@ -27,6 +28,7 @@ export function ProjectsDialog(props: ProjectsDialogProps): ReactElement {
   const { createProject, deleteProject } = useProjects();
   const { updateUserData } = useUserData();
   const { ConfirmDialog, confirm } = useConfirmDialog();
+  const { showNotification } = useNotification();
 
   const onClickNewProject = () => {
     const createNewProject = async () => {
@@ -38,6 +40,67 @@ export function ProjectsDialog(props: ProjectsDialogProps): ReactElement {
       props.onClose();
     };
     void createNewProject();
+  };
+
+  const onClickImport = () => {
+    const importProject = async () => {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json';
+      input.onchange = async () => {
+        if (!input.files || input.files.length === 0) {
+          return;
+        }
+        const file = input.files[0];
+        const data = await file.text();
+        let project;
+        try {
+          project = JSON.parse(data);
+        } catch (error) {
+          showNotification('Invalid project file (Parse error)', 'error');
+          return;
+        }
+        if (project.version !== 1) {
+          showNotification(
+            'Invalid project file (The version is invalid)',
+            'error'
+          );
+          return;
+        }
+        if (!project.name) {
+          showNotification(
+            'Invalid project file (The name is missing)',
+            'error'
+          );
+          return;
+        }
+        if (project.code === undefined) {
+          showNotification(
+            'Invalid project file (The code is missing)',
+            'error'
+          );
+          return;
+        }
+        if (!project.libraries) {
+          showNotification(
+            'Invalid project file (The libraries are missing)',
+            'error'
+          );
+          return;
+        }
+        const newProject = await createProject(project.name, {
+          code: project.code,
+          libraries: project.libraries,
+        });
+        await updateUserData({
+          currentProjectId: newProject.id,
+        });
+        showNotification('Project imported successfully', 'success');
+        props.onClose();
+      };
+      input.click();
+    };
+    void importProject();
   };
 
   const onClickDelete = (project: Project) => {
@@ -100,6 +163,7 @@ export function ProjectsDialog(props: ProjectsDialogProps): ReactElement {
         </DialogContent>
         <DialogActions>
           <Button onClick={onClickNewProject}>New Project</Button>
+          <Button onClick={onClickImport}>Import</Button>
           <Button onClick={props.onClose}>Close</Button>
         </DialogActions>
       </Dialog>
