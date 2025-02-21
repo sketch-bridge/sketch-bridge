@@ -4,7 +4,8 @@ import {
   Box,
   Button,
   FormControl,
-  Paper,
+  Tab,
+  Tabs,
   TextField,
   Toolbar,
   Typography,
@@ -32,7 +33,6 @@ import { useLogging } from './firebase/LoggingProvider.tsx';
 
 function App() {
   const firebaseAuth = useFirebaseAuth();
-
   const { projects, updateProject, refresh } = useProjects();
   const { userData, updateUserData } = useUserData();
   const { isBuilding, output, build, buildResult } = useBuilder();
@@ -50,6 +50,8 @@ function App() {
     useState<boolean>(false);
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
   const [projectName, setProjectName] = useState<string>('');
+  const [footerHeight, setFooterHeight] = useState<number>(300);
+  const [isResizing, setIsResizing] = useState<boolean>(false);
 
   useEffect(() => {
     if (userData !== null) {
@@ -246,10 +248,48 @@ function App() {
     setProjectName(name);
   };
 
+  const onMouseDownResizeHandle = () => {
+    setIsResizing(true);
+  };
+
+  const onMouseMoveResizeHandle = (event: MouseEvent) => {
+    if (!isResizing) {
+      return;
+    }
+    setFooterHeight((previousHeight) =>
+      Math.min(Math.max(previousHeight - event.movementY, 200), 400)
+    );
+  };
+
+  const onMouseUpResizeHandle = (_event: MouseEvent) => {
+    setIsResizing(false);
+  };
+
+  useEffect(() => {
+    if (isResizing) {
+      document.addEventListener('mousemove', onMouseMoveResizeHandle);
+      document.addEventListener('mouseup', onMouseUpResizeHandle);
+    } else {
+      document.removeEventListener('mousemove', onMouseMoveResizeHandle);
+      document.removeEventListener('mouseup', onMouseUpResizeHandle);
+    }
+    return () => {
+      document.removeEventListener('mousemove', onMouseMoveResizeHandle);
+      document.removeEventListener('mouseup', onMouseUpResizeHandle);
+    };
+  }, [isResizing]);
+
   return (
     <>
-      <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-        <Box sx={{ flexGrow: 1 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          width: '100%',
+          height: '100vh',
+        }}
+      >
+        <Box sx={{ height: '64px' }}>
           <AppBar position="static">
             <Toolbar>
               <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
@@ -262,7 +302,7 @@ function App() {
                     size="small"
                     value={projectName}
                     onChange={onChangeProjectName}
-                    sx={{ width: '300px', backgroundColor: 'white' }}
+                    sx={{ width: '400px', backgroundColor: 'white' }}
                   />
                 </FormControl>
               )}
@@ -271,46 +311,9 @@ function App() {
                   color="inherit"
                   onClick={onClickProjects}
                   startIcon={<AccountTreeIcon />}
+                  sx={{ marginRight: '32px' }}
                 >
                   Projects
-                </Button>
-              )}
-              {firebaseAuth.user !== null && (
-                <Button
-                  color="inherit"
-                  onClick={onClickExport}
-                  startIcon={<FileDownloadIcon />}
-                >
-                  Export
-                </Button>
-              )}
-              {firebaseAuth.user !== null && (
-                <Button
-                  color="inherit"
-                  onClick={onClickLibraries}
-                  startIcon={<LibraryBooksIcon />}
-                >
-                  Libraries
-                </Button>
-              )}
-              {firebaseAuth.user !== null && (
-                <Button
-                  color="inherit"
-                  onClick={onClickBuild}
-                  loading={isBuilding}
-                  startIcon={<BuildIcon />}
-                >
-                  Build
-                </Button>
-              )}
-              {firebaseAuth.user !== null && (
-                <Button
-                  color="inherit"
-                  onClick={onClickFlash}
-                  loading={isBuilding}
-                  startIcon={<FlashOnIcon />}
-                >
-                  Flash
                 </Button>
               )}
               {firebaseAuth.user === null && (
@@ -334,14 +337,74 @@ function App() {
             </Toolbar>
           </AppBar>
         </Box>
-        <Box sx={{ height: 'calc(100vh - 200px -  64px)' }}>
-          <Paper
-            elevation={3}
-            sx={{ height: '100%', margin: '8px', boxSizing: 'border-box' }}
+        <Box
+          sx={{
+            flexGrow: 0,
+            height: `calc(100vh - 64px - 16px - ${footerHeight}px)`,
+            borderBottom: '1px solid lightgray',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              borderBottom: '1px solid lightgray',
+            }}
           >
+            <Tabs value={0}>
+              <Tab label="Editor" />
+            </Tabs>
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'row',
+                gap: '8px',
+                marginRight: '16px',
+              }}
+            >
+              {firebaseAuth.user !== null && (
+                <Button
+                  onClick={onClickExport}
+                  startIcon={<FileDownloadIcon />}
+                >
+                  Export
+                </Button>
+              )}
+              {firebaseAuth.user !== null && (
+                <Button
+                  onClick={onClickLibraries}
+                  startIcon={<LibraryBooksIcon />}
+                >
+                  Libraries
+                </Button>
+              )}
+              {firebaseAuth.user !== null && (
+                <Button
+                  onClick={onClickBuild}
+                  loading={isBuilding}
+                  startIcon={<BuildIcon />}
+                >
+                  Build
+                </Button>
+              )}
+              {firebaseAuth.user !== null && (
+                <Button
+                  onClick={onClickFlash}
+                  loading={isBuilding}
+                  startIcon={<FlashOnIcon />}
+                >
+                  Flash
+                </Button>
+              )}
+            </Box>
+          </Box>
+          <Box sx={{ flexGrow: 1 }}>
             <Editor
-              height="100%"
               defaultLanguage="cpp"
+              height={`calc(100vh - 64px - 16px - ${footerHeight}px - 50px)`}
               value={code}
               options={{
                 minimap: { enabled: false },
@@ -350,30 +413,49 @@ function App() {
               }}
               onChange={onChangeCode}
             />
-          </Paper>
+          </Box>
         </Box>
-        <Box sx={{ height: '178px', paddingTop: '8px' }}>
-          <Paper
-            elevation={3}
-            sx={{
-              height: '100%',
-              margin: '8px',
-              boxSizing: 'border-box',
-            }}
-          >
+        <Box
+          sx={{
+            height: '16px',
+            cursor: 'ns-resize',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: '#f9f9f9',
+          }}
+          onMouseDown={onMouseDownResizeHandle}
+        >
+          <Box sx={{ width: '60%', border: '2px solid lightgray' }} />
+        </Box>
+        <Box
+          sx={{
+            height: footerHeight,
+            display: 'flex',
+            flexDirection: 'column',
+            borderTop: '1px solid lightgray',
+          }}
+        >
+          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+            <Tabs value={0}>
+              <Tab label="Output" />
+            </Tabs>
+          </Box>
+          <Box sx={{ overflowY: 'auto' }}>
             <Typography
               variant="body2"
               component="pre"
               sx={{
                 height: '100%',
-                overflowY: 'auto',
+                // overflowY: 'auto',
                 padding: '8px',
                 boxSizing: 'border-box',
               }}
             >
               {output}
             </Typography>
-          </Paper>
+          </Box>
         </Box>
       </Box>
       <ProjectsDialog
