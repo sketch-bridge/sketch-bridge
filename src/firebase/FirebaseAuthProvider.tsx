@@ -34,7 +34,6 @@ export const FirebaseAuthProvider: FC<Props> = ({ children }) => {
 
   useEffect(() => {
     return firebaseInstance.auth.onAuthStateChanged((user) => {
-      console.log('onAuthStateChanged', user);
       setUser(user);
     });
   }, []);

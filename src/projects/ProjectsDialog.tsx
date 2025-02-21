@@ -17,6 +17,7 @@ import { useUserData } from '../firebase/UserDataProvider.tsx';
 import { Project, useProjects } from '../firebase/ProjectsProvider.tsx';
 import { useConfirmDialog } from '../utils/ConfirmDialog.tsx';
 import { useNotification } from '../utils/NotificationProvider.tsx';
+import { useLogging } from '../firebase/LoggingProvider.tsx';
 
 type ProjectsDialogProps = {
   isOpen: boolean;
@@ -29,9 +30,11 @@ export function ProjectsDialog(props: ProjectsDialogProps): ReactElement {
   const { updateUserData } = useUserData();
   const { ConfirmDialog, confirm } = useConfirmDialog();
   const { showNotification } = useNotification();
+  const { log } = useLogging();
 
   const onClickNewProject = () => {
     const createNewProject = async () => {
+      log('create_project');
       const name = createDefaultProjectName(props.projects);
       const newProject = await createProject(name);
       await updateUserData({
@@ -51,6 +54,7 @@ export function ProjectsDialog(props: ProjectsDialogProps): ReactElement {
         if (!input.files || input.files.length === 0) {
           return;
         }
+        log('import');
         const file = input.files[0];
         const data = await file.text();
         let project;
@@ -108,10 +112,10 @@ export function ProjectsDialog(props: ProjectsDialogProps): ReactElement {
       const result = await confirm(
         `Are you sure you want to delete the project "${project.name}"?`
       );
-      console.log(result);
       if (!result) {
         return;
       }
+      log('delete_project');
       await deleteProject(project.id);
     };
     void deleteProjectAsync();

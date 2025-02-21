@@ -28,6 +28,7 @@ import { ProjectsDialog } from './projects/ProjectsDialog.tsx';
 import { useUserData } from './firebase/UserDataProvider.tsx';
 import { Project, useProjects } from './firebase/ProjectsProvider.tsx';
 import { useNotification } from './utils/NotificationProvider.tsx';
+import { useLogging } from './firebase/LoggingProvider.tsx';
 
 function App() {
   const firebaseAuth = useFirebaseAuth();
@@ -36,6 +37,7 @@ function App() {
   const { userData, updateUserData } = useUserData();
   const { isBuilding, output, build, buildResult } = useBuilder();
   const { showNotification } = useNotification();
+  const { log } = useLogging();
 
   const [code, setCode] = useState<string>('');
   const [isOpenFlashDialog, setIsOpenFlashDialog] = useState<boolean>(false);
@@ -124,6 +126,7 @@ function App() {
   const onClickLogin: MouseEventHandler<HTMLButtonElement> = useCallback(
     async (event) => {
       event.preventDefault();
+      log('login');
       const auth = firebaseAuth.firebase.auth;
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
@@ -134,6 +137,7 @@ function App() {
   const onClickLogout: MouseEventHandler<HTMLButtonElement> = useCallback(
     async (event) => {
       event.preventDefault();
+      log('logout');
       await firebaseAuth.firebase.auth.signOut();
       setCode('');
     },
@@ -153,6 +157,7 @@ function App() {
       if (currentProject === null) {
         throw new Error('currentProject is null');
       }
+      log('build');
       setBuildMode('build_only');
       await build(currentProject);
     },
@@ -168,6 +173,7 @@ function App() {
       if (currentProject === null) {
         throw new Error('currentProject is null');
       }
+      log('flash');
       setBuildMode('for_flash');
       await build(currentProject);
     },
@@ -196,6 +202,7 @@ function App() {
       if (currentProject === null) {
         throw new Error('currentProject is null');
       }
+      log('export');
       const json = JSON.stringify({
         version: 1,
         name: currentProject.name,
