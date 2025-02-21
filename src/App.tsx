@@ -3,7 +3,10 @@ import {
   AppBar,
   Box,
   Button,
+  Divider,
   FormControl,
+  Menu,
+  MenuItem,
   Tab,
   Tabs,
   TextField,
@@ -13,7 +16,13 @@ import {
 import Editor from '@monaco-editor/react';
 import { useFirebaseAuth } from './firebase/FirebaseAuthProvider.tsx';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { MouseEventHandler, useCallback, useEffect, useState } from 'react';
+import {
+  MouseEventHandler,
+  SyntheticEvent,
+  useCallback,
+  useEffect,
+  useState,
+} from 'react';
 import { useDebounce } from './DebounceHook.ts';
 import { FlashDialog } from './flash/FlashDialog.tsx';
 import { useBuilder } from './build/BuildHook.ts';
@@ -26,6 +35,8 @@ import LoginIcon from '@mui/icons-material/Login';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import SettingsIcon from '@mui/icons-material/Settings';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { ProjectsDialog } from './projects/ProjectsDialog.tsx';
 import {
   DEFAULT_FONT_SIZE,
@@ -35,6 +46,7 @@ import { Project, useProjects } from './firebase/ProjectsProvider.tsx';
 import { useNotification } from './utils/NotificationProvider.tsx';
 import { useLogging } from './firebase/LoggingProvider.tsx';
 import { SettingsDialog } from './projects/SettingsDialog.tsx';
+import { AboutThisDialog } from './utils/AboutThisDialog.tsx';
 
 function App() {
   // Use custom hooks.
@@ -63,6 +75,12 @@ function App() {
   const [projectName, setProjectName] = useState<string>('');
   const [footerHeight, setFooterHeight] = useState<number>(300);
   const [isResizing, setIsResizing] = useState<boolean>(false);
+  const [docsMenuAnchorEl, setDocsMenuAnchorEl] = useState<HTMLElement | null>(
+    null
+  );
+  const openDocsMenu = Boolean(docsMenuAnchorEl);
+  const [isOpenAboutThisDialog, setIsOpenAboutThisDialog] =
+    useState<boolean>(false);
 
   // Define effects.
 
@@ -306,6 +324,23 @@ function App() {
     setIsOpenSettingsDialog(false);
   }, []);
 
+  const onClickDocsMenu = (event: SyntheticEvent<HTMLButtonElement>) => {
+    setDocsMenuAnchorEl(event.currentTarget);
+  };
+
+  const onCloseDocsMenu = () => {
+    setDocsMenuAnchorEl(null);
+  };
+
+  const onClickAboutThis = () => {
+    setDocsMenuAnchorEl(null);
+    setIsOpenAboutThisDialog(true);
+  };
+
+  const onCloseAboutThisDialog = () => {
+    setIsOpenAboutThisDialog(false);
+  };
+
   // Render the component.
 
   return (
@@ -355,6 +390,62 @@ function App() {
                   Settings
                 </Button>
               )}
+              <>
+                <Button
+                  color="inherit"
+                  startIcon={<MenuBookIcon />}
+                  sx={{ marginRight: '8px' }}
+                  id="docsMenuButton"
+                  aria-controls={openDocsMenu ? 'menuDocs' : undefined}
+                  aria-haspopup="true"
+                  aria-expanded={openDocsMenu ? 'true' : undefined}
+                  onClick={onClickDocsMenu}
+                >
+                  Docs
+                </Button>
+                <Menu
+                  id="menuDocs"
+                  anchorEl={docsMenuAnchorEl}
+                  open={openDocsMenu}
+                  onClose={onCloseDocsMenu}
+                  MenuListProps={{ 'aria-labelledby': 'docsMenuButton' }}
+                >
+                  <MenuItem
+                    component="a"
+                    href="https://docs.arduino.cc/language-reference/"
+                    target="_blank"
+                    onClick={onCloseDocsMenu}
+                  >
+                    <Typography variant="body1">
+                      Language Reference <OpenInNewIcon fontSize="small" />
+                    </Typography>
+                  </MenuItem>
+                  <MenuItem
+                    component="a"
+                    href="https://docs.arduino.cc/libraries/"
+                    target="_blank"
+                    onClick={onCloseDocsMenu}
+                  >
+                    <Typography variant="body1">
+                      Libraries <OpenInNewIcon fontSize="small" />
+                    </Typography>
+                  </MenuItem>
+                  <MenuItem
+                    component="a"
+                    href="https://docs.arduino.cc/built-in-examples/"
+                    target="_blank"
+                    onClick={onCloseDocsMenu}
+                  >
+                    <Typography variant="body1">
+                      Built-in Examples <OpenInNewIcon fontSize="small" />
+                    </Typography>
+                  </MenuItem>
+                  <Divider />
+                  <MenuItem onClick={onClickAboutThis}>
+                    <Typography variant="body1">About This</Typography>
+                  </MenuItem>
+                </Menu>
+              </>
               {firebaseAuth.user === null && (
                 <Button
                   color="inherit"
@@ -518,6 +609,10 @@ function App() {
       <SettingsDialog
         isOpen={isOpenSettingsDialog}
         onClose={onCloseSettingsDialog}
+      />
+      <AboutThisDialog
+        isOpen={isOpenAboutThisDialog}
+        onClose={onCloseAboutThisDialog}
       />
     </>
   );
