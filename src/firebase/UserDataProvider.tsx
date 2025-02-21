@@ -8,8 +8,12 @@ import {
 import { useFirebaseAuth } from './FirebaseAuthProvider.tsx';
 import { collection, doc, getDoc, setDoc } from 'firebase/firestore';
 
+export const DEFAULT_FONT_SIZE = 14;
+
 export type UserData = {
   currentProjectId: string;
+  editorFontSize: number;
+  outputFontSize: number;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -53,18 +57,24 @@ export const UserDataProvider = ({ children }: Props) => {
     if (userDataRef.exists()) {
       userData = {
         currentProjectId: userDataRef.data().currentProjectId,
+        editorFontSize: userDataRef.data().editorFontSize || DEFAULT_FONT_SIZE,
+        outputFontSize: userDataRef.data().outputFontSize || DEFAULT_FONT_SIZE,
         createdAt: userDataRef.data().createdAt.toDate(),
         updatedAt: userDataRef.data().updatedAt.toDate(),
       };
     } else {
       userData = {
         currentProjectId: '',
+        editorFontSize: DEFAULT_FONT_SIZE,
+        outputFontSize: DEFAULT_FONT_SIZE,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
 
       await setDoc(doc(usersRef, firebaseAuth.user.uid), {
         currentProjectId: '',
+        editorFontSize: DEFAULT_FONT_SIZE,
+        outputFontSize: DEFAULT_FONT_SIZE,
         createdAt: userData.createdAt,
         updatedAt: userData.updatedAt,
       });

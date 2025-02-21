@@ -25,19 +25,28 @@ import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 import LoginIcon from '@mui/icons-material/Login';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import SettingsIcon from '@mui/icons-material/Settings';
 import { ProjectsDialog } from './projects/ProjectsDialog.tsx';
-import { useUserData } from './firebase/UserDataProvider.tsx';
+import {
+  DEFAULT_FONT_SIZE,
+  useUserData,
+} from './firebase/UserDataProvider.tsx';
 import { Project, useProjects } from './firebase/ProjectsProvider.tsx';
 import { useNotification } from './utils/NotificationProvider.tsx';
 import { useLogging } from './firebase/LoggingProvider.tsx';
+import { SettingsDialog } from './projects/SettingsDialog.tsx';
 
 function App() {
+  // Use custom hooks.
+
   const firebaseAuth = useFirebaseAuth();
   const { projects, updateProject, refresh } = useProjects();
   const { userData, updateUserData } = useUserData();
   const { isBuilding, output, build, buildResult } = useBuilder();
   const { showNotification } = useNotification();
   const { log } = useLogging();
+
+  // Define states.
 
   const [code, setCode] = useState<string>('');
   const [isOpenFlashDialog, setIsOpenFlashDialog] = useState<boolean>(false);
@@ -48,10 +57,14 @@ function App() {
     useState<boolean>(false);
   const [isOpenProjectsDialog, setIsOpenProjectsDialog] =
     useState<boolean>(false);
+  const [isOpenSettingsDialog, setIsOpenSettingsDialog] =
+    useState<boolean>(false);
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
   const [projectName, setProjectName] = useState<string>('');
   const [footerHeight, setFooterHeight] = useState<number>(300);
   const [isResizing, setIsResizing] = useState<boolean>(false);
+
+  // Define effects.
 
   useEffect(() => {
     if (userData !== null) {
@@ -124,6 +137,22 @@ function App() {
       setIsOpenFlashDialog(true);
     }
   }, [isBuilding, buildResult, buildMode]);
+
+  useEffect(() => {
+    if (isResizing) {
+      document.addEventListener('mousemove', onMouseMoveResizeHandle);
+      document.addEventListener('mouseup', onMouseUpResizeHandle);
+    } else {
+      document.removeEventListener('mousemove', onMouseMoveResizeHandle);
+      document.removeEventListener('mouseup', onMouseUpResizeHandle);
+    }
+    return () => {
+      document.removeEventListener('mousemove', onMouseMoveResizeHandle);
+      document.removeEventListener('mouseup', onMouseUpResizeHandle);
+    };
+  }, [isResizing]);
+
+  // Define event handlers.
 
   const onClickLogin: MouseEventHandler<HTMLButtonElement> = useCallback(
     async (event) => {
@@ -265,19 +294,19 @@ function App() {
     setIsResizing(false);
   };
 
-  useEffect(() => {
-    if (isResizing) {
-      document.addEventListener('mousemove', onMouseMoveResizeHandle);
-      document.addEventListener('mouseup', onMouseUpResizeHandle);
-    } else {
-      document.removeEventListener('mousemove', onMouseMoveResizeHandle);
-      document.removeEventListener('mouseup', onMouseUpResizeHandle);
-    }
-    return () => {
-      document.removeEventListener('mousemove', onMouseMoveResizeHandle);
-      document.removeEventListener('mouseup', onMouseUpResizeHandle);
-    };
-  }, [isResizing]);
+  const onClickSettings: MouseEventHandler<HTMLButtonElement> = useCallback(
+    async (event) => {
+      event.preventDefault();
+      setIsOpenSettingsDialog(true);
+    },
+    []
+  );
+
+  const onCloseSettingsDialog = useCallback(() => {
+    setIsOpenSettingsDialog(false);
+  }, []);
+
+  // Render the component.
 
   return (
     <>
@@ -311,9 +340,19 @@ function App() {
                   color="inherit"
                   onClick={onClickProjects}
                   startIcon={<AccountTreeIcon />}
-                  sx={{ marginRight: '32px' }}
+                  sx={{ marginRight: '8px' }}
                 >
                   Projects
+                </Button>
+              )}
+              {firebaseAuth.user !== null && (
+                <Button
+                  color="inherit"
+                  onClick={onClickSettings}
+                  startIcon={<SettingsIcon />}
+                  sx={{ marginRight: '8px' }}
+                >
+                  Settings
                 </Button>
               )}
               {firebaseAuth.user === null && (
@@ -410,6 +449,7 @@ function App() {
                 minimap: { enabled: false },
                 wordWrap: 'off',
                 readOnly: firebaseAuth.user === null,
+                fontSize: userData?.editorFontSize || DEFAULT_FONT_SIZE,
               }}
               onChange={onChangeCode}
             />
@@ -431,6 +471,7 @@ function App() {
         </Box>
         <Box
           sx={{
+            width: '100%',
             height: footerHeight,
             display: 'flex',
             flexDirection: 'column',
@@ -442,15 +483,16 @@ function App() {
               <Tab label="Output" />
             </Tabs>
           </Box>
-          <Box sx={{ overflowY: 'auto' }}>
+          <Box sx={{ overflowY: 'auto', width: '100%' }}>
             <Typography
               variant="body2"
               component="pre"
               sx={{
+                width: '100%',
                 height: '100%',
-                // overflowY: 'auto',
                 padding: '8px',
                 boxSizing: 'border-box',
+                fontSize: userData?.outputFontSize || DEFAULT_FONT_SIZE,
               }}
             >
               {output}
@@ -472,6 +514,10 @@ function App() {
         isOpen={isOpenLibrariesDialog}
         onClose={onCloseLibrariesDialog}
         project={currentProject}
+      />
+      <SettingsDialog
+        isOpen={isOpenSettingsDialog}
+        onClose={onCloseSettingsDialog}
       />
     </>
   );
