@@ -32,12 +32,16 @@ import { useNotification } from './utils/NotificationProvider.tsx';
 import { useLogging } from './firebase/LoggingProvider.tsx';
 
 function App() {
+  // Use custom hooks.
+
   const firebaseAuth = useFirebaseAuth();
   const { projects, updateProject, refresh } = useProjects();
   const { userData, updateUserData } = useUserData();
   const { isBuilding, output, build, buildResult } = useBuilder();
   const { showNotification } = useNotification();
   const { log } = useLogging();
+
+  // Define states.
 
   const [code, setCode] = useState<string>('');
   const [isOpenFlashDialog, setIsOpenFlashDialog] = useState<boolean>(false);
@@ -52,6 +56,8 @@ function App() {
   const [projectName, setProjectName] = useState<string>('');
   const [footerHeight, setFooterHeight] = useState<number>(300);
   const [isResizing, setIsResizing] = useState<boolean>(false);
+
+  // Define effects.
 
   useEffect(() => {
     if (userData !== null) {
@@ -124,6 +130,22 @@ function App() {
       setIsOpenFlashDialog(true);
     }
   }, [isBuilding, buildResult, buildMode]);
+
+  useEffect(() => {
+    if (isResizing) {
+      document.addEventListener('mousemove', onMouseMoveResizeHandle);
+      document.addEventListener('mouseup', onMouseUpResizeHandle);
+    } else {
+      document.removeEventListener('mousemove', onMouseMoveResizeHandle);
+      document.removeEventListener('mouseup', onMouseUpResizeHandle);
+    }
+    return () => {
+      document.removeEventListener('mousemove', onMouseMoveResizeHandle);
+      document.removeEventListener('mouseup', onMouseUpResizeHandle);
+    };
+  }, [isResizing]);
+
+  // Define event handlers.
 
   const onClickLogin: MouseEventHandler<HTMLButtonElement> = useCallback(
     async (event) => {
@@ -265,19 +287,7 @@ function App() {
     setIsResizing(false);
   };
 
-  useEffect(() => {
-    if (isResizing) {
-      document.addEventListener('mousemove', onMouseMoveResizeHandle);
-      document.addEventListener('mouseup', onMouseUpResizeHandle);
-    } else {
-      document.removeEventListener('mousemove', onMouseMoveResizeHandle);
-      document.removeEventListener('mouseup', onMouseUpResizeHandle);
-    }
-    return () => {
-      document.removeEventListener('mousemove', onMouseMoveResizeHandle);
-      document.removeEventListener('mouseup', onMouseUpResizeHandle);
-    };
-  }, [isResizing]);
+  // Render the component.
 
   return (
     <>
