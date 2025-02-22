@@ -22,6 +22,7 @@ export type Project = {
   name: string;
   code: string;
   uid: string;
+  fqbn: string;
   libraries: Library[];
   createdAt: Date;
   updatedAt: Date;
@@ -45,6 +46,8 @@ interface ProjectsContextState {
   deleteProject: (id: string) => Promise<void>;
   isLoading: boolean;
 }
+
+export const DEFAULT_FQBN = 'arduino:avr:uno';
 
 const ProjectsContext = createContext<ProjectsContextState | undefined>(
   undefined
@@ -77,6 +80,7 @@ export const ProjectsProvider = ({ children }: Props) => {
         name: 'New Project 1',
         code: '',
         uid: firebaseAuth.user.uid,
+        fqbn: DEFAULT_FQBN,
         libraries: [],
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -95,6 +99,7 @@ export const ProjectsProvider = ({ children }: Props) => {
           name: doc.data().name,
           code: doc.data().code,
           uid: doc.data().uid,
+          fqbn: doc.data().fqbn || DEFAULT_FQBN,
           libraries: doc.data().libraries || [],
           createdAt: doc.data().createdAt.toDate(),
           updatedAt: doc.data().updatedAt.toDate(),
@@ -129,6 +134,7 @@ export const ProjectsProvider = ({ children }: Props) => {
       },
       { merge: true }
     );
+    await refresh();
   };
 
   const createProject = async (
@@ -144,6 +150,7 @@ export const ProjectsProvider = ({ children }: Props) => {
       name,
       code: data?.code || '',
       uid: firebaseAuth.user.uid,
+      fqbn: data?.fqbn || DEFAULT_FQBN,
       libraries: data?.libraries || [],
       createdAt: new Date(),
       updatedAt: new Date(),

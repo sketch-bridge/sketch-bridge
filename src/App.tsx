@@ -7,6 +7,8 @@ import {
   FormControl,
   Menu,
   MenuItem,
+  Select,
+  SelectChangeEvent,
   Tab,
   Tabs,
   TextField,
@@ -47,6 +49,7 @@ import { useNotification } from './utils/NotificationProvider.tsx';
 import { useLogging } from './firebase/LoggingProvider.tsx';
 import { SettingsDialog } from './projects/SettingsDialog.tsx';
 import { AboutThisDialog } from './utils/AboutThisDialog.tsx';
+import boards from './assets/boards.json';
 
 function App() {
   // Use custom hooks.
@@ -341,6 +344,16 @@ function App() {
     setIsOpenAboutThisDialog(false);
   };
 
+  const onChangeBoard = (event: SelectChangeEvent<string>) => {
+    if (currentProject === null) {
+      return;
+    }
+    const fqbn = event.target.value;
+    void updateProject(currentProject.id, {
+      fqbn,
+    });
+  };
+
   // Render the component.
 
   return (
@@ -491,10 +504,24 @@ function App() {
               sx={{
                 display: 'flex',
                 flexDirection: 'row',
+                alignItems: 'center',
                 gap: '8px',
                 marginRight: '16px',
               }}
             >
+              {firebaseAuth.user !== null && (
+                <Select
+                  value={currentProject?.fqbn || ''}
+                  sx={{ height: '40px' }}
+                  onChange={onChangeBoard}
+                >
+                  {boards.map((board) => (
+                    <MenuItem key={board.fqbn} value={board.fqbn}>
+                      {board.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              )}
               {firebaseAuth.user !== null && (
                 <Button
                   onClick={onClickExport}
