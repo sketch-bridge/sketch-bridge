@@ -23,10 +23,8 @@ export const useBuilder = () => {
       setOutput('');
       showNotification('Building your sketch...', 'info');
       const idToken = await firebaseAuth.user.getIdToken();
-      // const response = await fetch(
-      //   `https://arduino-compile-server-163071802807.asia-northeast1.run.app/build`,
-      //   {
-      const response = await fetch(`/build`, {
+      const response = await fetch(`http://localhost:8080/build`, {
+        // const response = await fetch(`/build`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${idToken}`,

@@ -12,6 +12,11 @@ import { Optiboot } from './Optiboot.ts';
 import { isError } from '../FailableResult.ts';
 import { useNotification } from '../utils/NotificationProvider.tsx';
 import { Project } from '../firebase/ProjectsProvider.tsx';
+import { Bootloader } from './Bootloader.ts';
+
+const bootloaders: Record<'optiboot', Bootloader> = {
+  optiboot: new Optiboot(),
+};
 
 type FlashDialogProps = {
   isOpen: boolean;
@@ -62,70 +67,14 @@ export function FlashDialog(props: FlashDialogProps): ReactElement {
   const onClickFlash = useCallback(() => {
     const flash = async () => {
       setIsFlashing(true);
-      setMessage(`Opening port...`);
-      const writer = new Optiboot();
-      const openPortResult = await writer.openPort();
-      if (isError(openPortResult)) {
+      const writer = bootloaders.optiboot;
+      await writer.init();
+      const result = await writer.flash(hex, (_rate, message) => {
+        setMessage(message);
+      });
+      if (isError(result)) {
         setIsFlashing(false);
-        setMessage(`[Error] Failed to open port`);
-        return;
-      }
-      setMessage(`Synchronizing...`);
-      const synchronizeWithBootloaderResult =
-        await writer.synchronizeWithBootloader();
-      if (isError(synchronizeWithBootloaderResult)) {
-        setIsFlashing(false);
-        setMessage(`[Error] Failed to synchronize with bootloader`);
-        return;
-      }
-      setMessage(`Get major version...`);
-      const getMajorVersionResult = await writer.getMajorVersion();
-      if (isError(getMajorVersionResult)) {
-        setIsFlashing(false);
-        setMessage(`[Error] Failed to get major version`);
-        return;
-      }
-      setMessage(`Get minor version...`);
-      const getMinorVersionResult = await writer.getMinorVersion();
-      if (isError(getMinorVersionResult)) {
-        setIsFlashing(false);
-        setMessage(`[Error] Failed to get minor version`);
-        return;
-      }
-      setMessage(`Reading signature...`);
-      const readSignatureResult = await writer.readSignature();
-      if (isError(readSignatureResult)) {
-        setIsFlashing(false);
-        setMessage(`[Error] Failed to read signature`);
-        return;
-      }
-      setMessage(`Entering programming mode...`);
-      const enterProgrammingModeResult = await writer.enterProgrammingMode();
-      if (isError(enterProgrammingModeResult)) {
-        setIsFlashing(false);
-        setMessage(`[Error] Failed to enter programming mode`);
-        return;
-      }
-      const firmwareBytes = parseIntelHex(hex);
-      setMessage(`Writing firmware...`);
-      const writeFirmwareResult = await writer.writeFirmware(firmwareBytes);
-      if (isError(writeFirmwareResult)) {
-        setIsFlashing(false);
-        setMessage(`[Error] Failed to write firmware`);
-        return;
-      }
-      setMessage(`Leaving programming mode...`);
-      const leaveProgrammingModeResult = await writer.leaveProgrammingMode();
-      if (isError(leaveProgrammingModeResult)) {
-        setIsFlashing(false);
-        setMessage(`[Error] Failed to leave programming mode`);
-        return;
-      }
-      setMessage(`Closing port...`);
-      const closePortResult = await writer.closePort();
-      if (isError(closePortResult)) {
-        setIsFlashing(false);
-        setMessage(`[Error] Failed to close port`);
+        setMessage(`[Error] ${result.error}`);
         return;
       }
       setIsFlashing(false);
@@ -135,39 +84,20 @@ export function FlashDialog(props: FlashDialogProps): ReactElement {
     void flash();
   }, [hex]);
 
-  const parseIntelHex = (hexText: string) => {
-    let data = [];
-    const lines = hexText.split(/\r?\n/);
-    for (let line of lines) {
-      if (line.startsWith(':')) {
-        let byteCount = parseInt(line.substring(1, 3), 16);
-        let address = parseInt(line.substring(3, 7), 16);
-        let recordType = parseInt(line.substring(7, 9), 16);
-        if (recordType === 0) {
-          for (let i = 0; i < byteCount; i++) {
-            let byte = parseInt(line.substring(9 + i * 2, 11 + i * 2), 16);
-            data[address + i] = byte;
-          }
-        }
-      }
-    }
-    return data;
-  };
-
   return (
     <Dialog open={props.isOpen} fullWidth={true} maxWidth="xs">
       <DialogTitle>Flash Firmware</DialogTitle>
       <DialogContent>{message}</DialogContent>
       <DialogActions>
-        <Button disabled={isPreparing || isFlashing} onClick={onClickCancel}>
-          Close
-        </Button>
         <Button
           disabled={isPreparing || isFlashing}
           type="submit"
           onClick={onClickFlash}
         >
           Flash
+        </Button>
+        <Button disabled={isPreparing || isFlashing} onClick={onClickCancel}>
+          Close
         </Button>
       </DialogActions>
     </Dialog>
