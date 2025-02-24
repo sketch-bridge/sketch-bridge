@@ -7,7 +7,7 @@ import {
   successResult,
   successResultOf,
 } from '../FailableResult.ts';
-import { Bootloader } from './Bootloader.ts';
+import { Binary, Bootloader, isHexBinary } from './Bootloader.ts';
 
 const STK_OK = 0x10;
 const STK_INSYNC = 0x14;
@@ -45,9 +45,12 @@ export class Optiboot extends Bootloader {
   }
 
   async flash(
-    hex: string,
+    binary: Binary,
     progressCallback: (rate: number, message: string) => void
   ): Promise<FailableResult<string>> {
+    if (!isHexBinary(binary)) {
+      throw new Error('Binary is not hex');
+    }
     progressCallback(0, 'Opening port...');
     const writer = new Optiboot();
     const openPortResult = await writer.openPort();
@@ -80,18 +83,18 @@ export class Optiboot extends Bootloader {
     if (isError(enterProgrammingModeResult)) {
       return errorResultOf(`[Error] Failed to enter programming mode`);
     }
-    const firmwareBytes = this.parseIntelHex(hex);
+    const firmwareBytes = this.parseIntelHex(binary.data);
     progressCallback(0, 'Writing firmware...');
     const writeFirmwareResult = await writer.writeFirmware(firmwareBytes);
     if (isError(writeFirmwareResult)) {
       return errorResultOf(`[Error] Failed to write firmware`);
     }
-    progressCallback(0, 'Leaving programming mode...');
+    progressCallback(100, 'Leaving programming mode...');
     const leaveProgrammingModeResult = await writer.leaveProgrammingMode();
     if (isError(leaveProgrammingModeResult)) {
       return errorResultOf(`[Error] Failed to leave programming mode`);
     }
-    progressCallback(0, 'Closing port...');
+    progressCallback(100, 'Closing port...');
     const closePortResult = await writer.closePort();
     if (isError(closePortResult)) {
       return errorResultOf(`[Error] Failed to close port`);

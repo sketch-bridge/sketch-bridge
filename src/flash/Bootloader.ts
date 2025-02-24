@@ -1,10 +1,27 @@
 import { FailableResult } from '../FailableResult.ts';
 
+type HexBinary = {
+  type: 'hex';
+  data: string;
+};
+
+type BinBinary = {
+  type: 'bin';
+  data: Uint8Array;
+};
+
+export type Binary = HexBinary | BinBinary;
+
+export const isHexBinary = (binary: Binary): binary is HexBinary =>
+  binary.type === 'hex';
+export const isBinBinary = (binary: Binary): binary is BinBinary =>
+  binary.type === 'bin';
+
 export abstract class Bootloader {
   abstract init(): Promise<void>;
 
   abstract flash(
-    hex: string,
+    binary: Binary,
     progressCallback: (rate: number, message: string) => void
   ): Promise<FailableResult<string>>;
 
