@@ -7,6 +7,7 @@ import {
   successResult,
   successResultOf,
 } from '../FailableResult.ts';
+import { Binary, Bootloader, isHexBinary } from './Bootloader.ts';
 
 const STK_OK = 0x10;
 const STK_INSYNC = 0x14;
@@ -19,17 +20,87 @@ const STK_LOAD_ADDRESS = 0x55;
 const STK_PROG_PAGE = 0x64;
 const STK_READ_SIGN = 0x75;
 
-export class Optiboot {
+export class Optiboot extends Bootloader {
   private isOpen: boolean;
   private port: SerialPort | undefined;
   private writer: WritableStreamDefaultWriter<Uint8Array> | undefined;
   private reader: ReadableStreamDefaultReader<Uint8Array> | undefined;
 
   constructor() {
+    super();
     this.port = undefined;
     this.writer = undefined;
     this.reader = undefined;
     this.isOpen = false;
+  }
+
+  async init(): Promise<void> {
+    if (this.isOpen) {
+      await this.closePort();
+    }
+    this.port = undefined;
+    this.writer = undefined;
+    this.reader = undefined;
+    this.isOpen = false;
+  }
+
+  async flash(
+    binary: Binary,
+    progressCallback: (rate: number, message: string) => void
+  ): Promise<FailableResult<string>> {
+    if (!isHexBinary(binary)) {
+      throw new Error('Binary is not hex');
+    }
+    progressCallback(0, 'Opening port...');
+    const writer = new Optiboot();
+    const openPortResult = await writer.openPort();
+    if (isError(openPortResult)) {
+      return errorResultOf(`[Error] Failed to open port`);
+    }
+    progressCallback(0, 'Synchronizing...');
+    const synchronizeWithBootloaderResult =
+      await writer.synchronizeWithBootloader();
+    if (isError(synchronizeWithBootloaderResult)) {
+      return errorResultOf(`[Error] Failed to synchronize with bootloader`);
+    }
+    progressCallback(0, 'Get major version...');
+    const getMajorVersionResult = await writer.getMajorVersion();
+    if (isError(getMajorVersionResult)) {
+      return errorResultOf(`[Error] Failed to get major version`);
+    }
+    progressCallback(0, 'Get minor version...');
+    const getMinorVersionResult = await writer.getMinorVersion();
+    if (isError(getMinorVersionResult)) {
+      return errorResultOf(`[Error] Failed to get minor version`);
+    }
+    progressCallback(0, 'Reading signature...');
+    const readSignatureResult = await writer.readSignature();
+    if (isError(readSignatureResult)) {
+      return errorResultOf(`[Error] Failed to read signature`);
+    }
+    progressCallback(0, 'Entering programming mode...');
+    const enterProgrammingModeResult = await writer.enterProgrammingMode();
+    if (isError(enterProgrammingModeResult)) {
+      return errorResultOf(`[Error] Failed to enter programming mode`);
+    }
+    const firmwareBytes = this.parseIntelHex(binary.data);
+    progressCallback(0, 'Writing firmware...');
+    const writeFirmwareResult = await writer.writeFirmware(firmwareBytes);
+    if (isError(writeFirmwareResult)) {
+      return errorResultOf(`[Error] Failed to write firmware`);
+    }
+    progressCallback(100, 'Leaving programming mode...');
+    const leaveProgrammingModeResult = await writer.leaveProgrammingMode();
+    if (isError(leaveProgrammingModeResult)) {
+      return errorResultOf(`[Error] Failed to leave programming mode`);
+    }
+    progressCallback(100, 'Closing port...');
+    const closePortResult = await writer.closePort();
+    if (isError(closePortResult)) {
+      return errorResultOf(`[Error] Failed to close port`);
+    }
+    progressCallback(100, 'Flashing completed');
+    return successResult();
   }
 
   async openPort(): Promise<

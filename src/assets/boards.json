@@ -1,0 +1,10 @@
+[
+  {
+    "name": "Arduino Uno",
+    "fqbn": "arduino:avr:uno"
+  },
+  {
+    "name": "Arduino UNO R4 Minima",
+    "fqbn": "arduino:renesas_uno:minima"
+  }
+]
