@@ -6,5 +6,9 @@
   {
     "name": "Arduino UNO R4 Minima",
     "fqbn": "arduino:renesas_uno:minima"
+  },
+  {
+    "name": "Arduino UNO R4 WiFi",
+    "fqbn": "arduino:renesas_uno:unor4wifi"
   }
 ]
