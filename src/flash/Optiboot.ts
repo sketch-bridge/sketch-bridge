@@ -52,50 +52,49 @@ export class Optiboot extends Bootloader {
       throw new Error('Binary is not hex');
     }
     progressCallback(0, 'Opening port...');
-    const writer = new Optiboot();
-    const openPortResult = await writer.openPort();
+    const openPortResult = await this.openPort();
     if (isError(openPortResult)) {
       return errorResultOf(`[Error] Failed to open port`);
     }
     progressCallback(0, 'Synchronizing...');
     const synchronizeWithBootloaderResult =
-      await writer.synchronizeWithBootloader();
+      await this.synchronizeWithBootloader();
     if (isError(synchronizeWithBootloaderResult)) {
       return errorResultOf(`[Error] Failed to synchronize with bootloader`);
     }
     progressCallback(0, 'Get major version...');
-    const getMajorVersionResult = await writer.getMajorVersion();
+    const getMajorVersionResult = await this.getMajorVersion();
     if (isError(getMajorVersionResult)) {
       return errorResultOf(`[Error] Failed to get major version`);
     }
     progressCallback(0, 'Get minor version...');
-    const getMinorVersionResult = await writer.getMinorVersion();
+    const getMinorVersionResult = await this.getMinorVersion();
     if (isError(getMinorVersionResult)) {
       return errorResultOf(`[Error] Failed to get minor version`);
     }
     progressCallback(0, 'Reading signature...');
-    const readSignatureResult = await writer.readSignature();
+    const readSignatureResult = await this.readSignature();
     if (isError(readSignatureResult)) {
       return errorResultOf(`[Error] Failed to read signature`);
     }
     progressCallback(0, 'Entering programming mode...');
-    const enterProgrammingModeResult = await writer.enterProgrammingMode();
+    const enterProgrammingModeResult = await this.enterProgrammingMode();
     if (isError(enterProgrammingModeResult)) {
       return errorResultOf(`[Error] Failed to enter programming mode`);
     }
     const firmwareBytes = this.parseIntelHex(binary.data);
     progressCallback(0, 'Writing firmware...');
-    const writeFirmwareResult = await writer.writeFirmware(firmwareBytes);
+    const writeFirmwareResult = await this.writeFirmware(firmwareBytes);
     if (isError(writeFirmwareResult)) {
       return errorResultOf(`[Error] Failed to write firmware`);
     }
     progressCallback(100, 'Leaving programming mode...');
-    const leaveProgrammingModeResult = await writer.leaveProgrammingMode();
+    const leaveProgrammingModeResult = await this.leaveProgrammingMode();
     if (isError(leaveProgrammingModeResult)) {
       return errorResultOf(`[Error] Failed to leave programming mode`);
     }
     progressCallback(100, 'Closing port...');
-    const closePortResult = await writer.closePort();
+    const closePortResult = await this.closePort();
     if (isError(closePortResult)) {
       return errorResultOf(`[Error] Failed to close port`);
     }
