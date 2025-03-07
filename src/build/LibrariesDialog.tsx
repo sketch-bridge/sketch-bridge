@@ -100,9 +100,13 @@ export function LibrariesDialog(props: LibrariesDialogProps): ReactElement {
       throw new Error('Project is null');
     }
     setIsApplying(true);
-    await updateProject(props.project.id, {
-      libraries: [...selectedLibraryMap.values()],
-    });
+    await updateProject(
+      props.project.id,
+      {
+        libraries: [...selectedLibraryMap.values()],
+      },
+      true
+    );
     setIsApplying(false);
     props.onClose();
   };
