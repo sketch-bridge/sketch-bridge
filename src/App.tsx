@@ -129,9 +129,13 @@ function App() {
   const debouncedCode = useDebounce(code, 500);
   useEffect(() => {
     if (currentProject !== null) {
-      void updateProject(currentProject.id, {
-        code: debouncedCode,
-      });
+      void updateProject(
+        currentProject.id,
+        {
+          code: debouncedCode,
+        },
+        false
+      );
     }
   }, [debouncedCode]);
 
@@ -143,9 +147,13 @@ function App() {
         showNotification('Project name cannot be empty.', 'error');
         return;
       }
-      void updateProject(currentProject.id, {
-        name: debouncedProjectName,
-      });
+      void updateProject(
+        currentProject.id,
+        {
+          name: debouncedProjectName,
+        },
+        true
+      );
       void refresh();
     }
   }, [debouncedProjectName]);
@@ -349,9 +357,13 @@ function App() {
       return;
     }
     const fqbn = event.target.value;
-    void updateProject(currentProject.id, {
-      fqbn,
-    });
+    void updateProject(
+      currentProject.id,
+      {
+        fqbn,
+      },
+      true
+    );
   };
 
   // Render the component.

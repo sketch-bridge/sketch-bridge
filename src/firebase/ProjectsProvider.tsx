@@ -41,7 +41,8 @@ interface ProjectsContextState {
   ) => Promise<Project>;
   updateProject: (
     id: string,
-    data: Partial<Omit<Project, 'id'>>
+    data: Partial<Omit<Project, 'id'>>,
+    isRefresh: boolean
   ) => Promise<void>;
   deleteProject: (id: string) => Promise<void>;
   isLoading: boolean;
@@ -116,7 +117,8 @@ export const ProjectsProvider = ({ children }: Props) => {
 
   const updateProject = async (
     id: string,
-    data: Partial<Omit<Project, 'id'>>
+    data: Partial<Omit<Project, 'id'>>,
+    isRefresh: boolean
   ) => {
     if (firebaseAuth.user === null) {
       console.warn('User is not signed in');
@@ -134,7 +136,9 @@ export const ProjectsProvider = ({ children }: Props) => {
       },
       { merge: true }
     );
-    await refresh();
+    if (isRefresh) {
+      await refresh();
+    }
   };
 
   const createProject = async (
