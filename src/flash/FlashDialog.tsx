@@ -17,7 +17,7 @@ import { useNotification } from '../utils/NotificationProvider.tsx';
 import { Project } from '../firebase/ProjectsProvider.tsx';
 import { Binary, Bootloader } from './Bootloader.ts';
 import { UsbDfu } from './UsbDfu.ts';
-import { RenesasFlashBoot } from './RenesasFlashBoot.ts';
+import { SamBaExtended2 } from './SamBaExtended2.ts';
 
 type BootloaderType = 'optiboot' | 'usbdfu' | 'renesasflashboot';
 
@@ -25,7 +25,7 @@ const bootloaders: Record<BootloaderType, { writer: Bootloader; ext: string }> =
   {
     optiboot: { writer: new Optiboot(), ext: 'hex' },
     usbdfu: { writer: new UsbDfu(), ext: 'bin' },
-    renesasflashboot: { writer: new RenesasFlashBoot(), ext: 'bin' },
+    renesasflashboot: { writer: new SamBaExtended2(), ext: 'bin' },
   };
 
 const fqbnToBootloaderMap: Record<string, BootloaderType> = {

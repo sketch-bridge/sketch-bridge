@@ -9,7 +9,7 @@ import {
   successResultOf,
 } from '../FailableResult.ts';
 
-export class RenesasFlashBoot extends Bootloader {
+export class SamBaExtended2 extends Bootloader {
   private isOpen: boolean;
   private port: SerialPort | undefined;
   private writer: WritableStreamDefaultWriter<Uint8Array> | undefined;
@@ -40,10 +40,23 @@ export class RenesasFlashBoot extends Bootloader {
     if (!isBinBinary(binary)) {
       throw new Error('Binary is not bin');
     }
+
+    // progressCallback(0, 'Initializing port...');
+    // const initializePortResult = await this.initializePort();
+    // if (isError(initializePortResult)) {
+    //   return errorResultOf('[Error] Failed to initialize port');
+    // }
+
     progressCallback(0, 'Opening port...');
     const openPortResult = await this.openPort();
     if (isError(openPortResult)) {
       return errorResultOf('[Error] Failed to open port');
+    }
+
+    progressCallback(0, 'Setting binary mode...');
+    const setBinaryModeResult = await this.setBinaryMode();
+    if (isError(setBinaryModeResult)) {
+      return errorResultOf('[Error] Failed to set binary mode');
     }
 
     progressCallback(0, 'Handshaking...');
@@ -61,6 +74,38 @@ export class RenesasFlashBoot extends Bootloader {
     return successResult();
   }
 
+  async initializePort(): Promise<
+    FailableResultWithValue<boolean, ErrorInformation>
+  > {
+    try {
+      const port = await navigator.serial.requestPort();
+      if (port === null) {
+        return errorResultOf({
+          code: 'no_port_selected',
+          message: 'No port selected',
+        });
+      }
+      await port.open({
+        baudRate: 1200,
+      });
+      if (port.readable === null || port.writable === null) {
+        return errorResultOf({
+          code: 'port_not_readable_or_writable',
+          message: 'Port is not readable or writable',
+        });
+      }
+      await port.setSignals({ dataTerminalReady: false, requestToSend: true });
+      await port.close();
+      return successResultOf(true);
+    } catch (error) {
+      console.error(error);
+      return errorResultOf({
+        code: 'initialize_port_error',
+        message: 'Error initializing port',
+      });
+    }
+  }
+
   async openPort(): Promise<
     FailableResultWithValue<boolean, ErrorInformation>
   > {
@@ -73,7 +118,12 @@ export class RenesasFlashBoot extends Bootloader {
         });
       }
       await port.open({
-        baudRate: 921600,
+        // baudRate: 921600,
+        baudRate: 115200,
+        dataBits: 8,
+        stopBits: 1,
+        parity: 'none',
+        flowControl: 'none',
       });
       if (port.readable === null || port.writable === null) {
         return errorResultOf({
@@ -126,15 +176,15 @@ export class RenesasFlashBoot extends Bootloader {
         message: 'No writer',
       });
     }
-    // console.log('Writing 0xFF 0xFF 0xFF 0xFF');
-    // await this.writer.write(new Uint8Array([0xff, 0xff, 0xff, 0xff]));
-    // await new Promise((resolve) => setTimeout(resolve, 500));
-    console.log('Writing 0x80 0x71 0x00 0x00 0x00');
-    await this.writer.write(new Uint8Array([0x80, 0x71, 0x00, 0x00, 0x00]));
-    // await this.writer.ready;
+    // console.log('Writing 0x76 0x65 0x72 0x73 0x69 0x6f 0x6e 0x0a'); // "version\n"
+    console.log('Writing 0x49 0x3a 0x4e 0x56 0x4d 0x0a'); // "version\n"
+    await this.writer.write(
+      // new Uint8Array([0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x0a])
+      new Uint8Array([0x49, 0x3a, 0x4e, 0x56, 0x4d, 0x0a]) // "I:NVM\n"
+    );
 
-    console.log('Reading 4 bytes');
-    const response = await this.readExactBytes(4);
+    console.log('Reading 5 bytes');
+    const response = await this.readExactBytes(5);
     console.log(response);
     if (isError(response)) {
       console.error('Failed to start boot mode', response.error);
@@ -153,6 +203,46 @@ export class RenesasFlashBoot extends Bootloader {
     return successResult();
   }
 
+  async setBinaryMode(): Promise<FailableResult<ErrorInformation>> {
+    if (!this.isOpen) {
+      return errorResultOf({
+        code: 'port_not_opened',
+        message: 'Port is not opened',
+      });
+    }
+    if (this.writer === undefined) {
+      return errorResultOf({
+        code: 'no_writer',
+        message: 'No writer',
+      });
+    }
+    const result = await this.readWord(0x00000000);
+    console.log(result);
+    console.log('Writing 0x4e 0x23');
+    await this.writer.write(
+      new Uint8Array([0x4e, 0x23]) // "N#"
+    );
+    this.writer.releaseLock();
+    // console.log('Reading 2 bytes');
+    // const response = await this.readExactBytes(2);
+    // console.log(response);
+    // if (isError(response)) {
+    //   console.error('Failed to set binary mode', response.error);
+    //   return errorResultOf({
+    //     code: 'set_binary_mode_failed',
+    //     message: 'Failed to set binary mode',
+    //   });
+    // }
+    // if (response.value[0] !== 0x00) {
+    //   console.error('Failed to set binary mode', response.value[0]);
+    //   return errorResultOf({
+    //     code: 'set_binary_mode_failed',
+    //     message: 'Failed to set binary mode',
+    //   });
+    // }
+    return successResult();
+  }
+
   private async readExactBytes(
     length: number
   ): Promise<FailableResultWithValue<Uint8Array, ErrorInformation>> {
@@ -164,15 +254,21 @@ export class RenesasFlashBoot extends Bootloader {
     }
     let chunks: Uint8Array[] = [];
     let receivedLength = 0;
-    while (receivedLength < length) {
-      const { value, done } = await this.reader.read();
-      if (done) {
-        break;
+    try {
+      while (receivedLength < length) {
+        console.log('Reading...');
+        const { value, done } = await this.reader.read();
+        console.log(value, done);
+        if (done) {
+          break;
+        }
+        if (value) {
+          chunks.push(value);
+          receivedLength += value.length;
+        }
       }
-      if (value) {
-        chunks.push(value);
-        receivedLength += value.length;
-      }
+    } finally {
+      this.reader.releaseLock();
     }
     let fullData = new Uint8Array(receivedLength);
     let offset = 0;
@@ -181,5 +277,33 @@ export class RenesasFlashBoot extends Bootloader {
       offset += chunk.length;
     }
     return successResultOf(fullData.slice(0, length));
+  }
+
+  private async readWord(
+    address: number
+  ): Promise<FailableResultWithValue<number, ErrorInformation>> {
+    if (this.reader === undefined) {
+      return errorResultOf({
+        code: 'no_reader',
+        message: 'No reader',
+      });
+    }
+    if (this.writer === undefined) {
+      return errorResultOf({
+        code: 'no_writer',
+        message: 'No writer',
+      });
+    }
+    const cmd = `w${address.toString(16).padStart(8, '0')},4#\n\r`;
+    console.log(new TextEncoder().encode(cmd));
+    await this.writer.write(new TextEncoder().encode(cmd));
+    const response = await this.readExactBytes(4);
+    if (isError(response)) {
+      return errorResultOf(response.error);
+    }
+    const values = response.value;
+    return successResultOf(
+      (values[3] << 24) | (values[2] << 16) | (values[1] << 8) | values[0]
+    );
   }
 }
