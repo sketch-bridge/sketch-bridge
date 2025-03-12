@@ -118,8 +118,8 @@ export class SamBaExtended2 extends Bootloader {
         });
       }
       await port.open({
-        // baudRate: 921600,
-        baudRate: 115200,
+        baudRate: 921600,
+        // baudRate: 115200,
         dataBits: 8,
         stopBits: 1,
         parity: 'none',
@@ -131,6 +131,7 @@ export class SamBaExtended2 extends Bootloader {
           message: 'Port is not readable or writable',
         });
       }
+      await port.setSignals({ dataTerminalReady: false });
       this.reader = port.readable.getReader();
       this.writer = port.writable.getWriter();
       this.port = port;
@@ -216,23 +217,23 @@ export class SamBaExtended2 extends Bootloader {
         message: 'No writer',
       });
     }
-    const result = await this.readWord(0x00000000);
-    console.log(result);
+    // const result = await this.readWord(0x00000000);
+    // console.log(result);
     console.log('Writing 0x4e 0x23');
     await this.writer.write(
       new Uint8Array([0x4e, 0x23]) // "N#"
     );
     this.writer.releaseLock();
-    // console.log('Reading 2 bytes');
-    // const response = await this.readExactBytes(2);
-    // console.log(response);
-    // if (isError(response)) {
-    //   console.error('Failed to set binary mode', response.error);
-    //   return errorResultOf({
-    //     code: 'set_binary_mode_failed',
-    //     message: 'Failed to set binary mode',
-    //   });
-    // }
+    console.log('Reading 2 bytes');
+    const response = await this.readExactBytes(2);
+    console.log(response);
+    if (isError(response)) {
+      console.error('Failed to set binary mode', response.error);
+      return errorResultOf({
+        code: 'set_binary_mode_failed',
+        message: 'Failed to set binary mode',
+      });
+    }
     // if (response.value[0] !== 0x00) {
     //   console.error('Failed to set binary mode', response.value[0]);
     //   return errorResultOf({
@@ -279,7 +280,7 @@ export class SamBaExtended2 extends Bootloader {
     return successResultOf(fullData.slice(0, length));
   }
 
-  private async readWord(
+  async readWord(
     address: number
   ): Promise<FailableResultWithValue<number, ErrorInformation>> {
     if (this.reader === undefined) {
