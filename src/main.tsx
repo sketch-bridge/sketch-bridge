@@ -11,6 +11,7 @@ import { NotificationProvider } from './utils/NotificationProvider.tsx';
 import { UserDataProvider } from './firebase/UserDataProvider.tsx';
 import { ProjectsProvider } from './firebase/ProjectsProvider.tsx';
 import { LoggingProvider } from './firebase/LoggingProvider.tsx';
+import { SerialMonitorProvider } from './monitor/SerialMonitorProvider.tsx';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -19,7 +20,9 @@ createRoot(document.getElementById('root')!).render(
         <NotificationProvider>
           <UserDataProvider>
             <ProjectsProvider>
-              <App />
+              <SerialMonitorProvider>
+                <App />
+              </SerialMonitorProvider>
             </ProjectsProvider>
           </UserDataProvider>
         </NotificationProvider>
