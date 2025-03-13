@@ -25,16 +25,28 @@ export function SerialMonitor(_props: SerialMonitorProps) {
   }, [readData]);
 
   return (
-    <Box sx={{ overflowY: 'auto', width: '100%' }}>
+    <Box
+      sx={{
+        overflowY: 'auto',
+        width: '100%',
+        height: '100%',
+        position: 'relative',
+      }}
+    >
       <Typography
         variant="body2"
         component="pre"
         sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
           width: '100%',
           height: '100%',
           padding: '8px',
           boxSizing: 'border-box',
           fontSize: userData?.outputFontSize || DEFAULT_FONT_SIZE,
+          whiteSpace: 'pre-wrap',
+          wordWrap: 'break-word',
         }}
       >
         {output}

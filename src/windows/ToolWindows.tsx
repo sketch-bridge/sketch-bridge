@@ -42,16 +42,28 @@ export function ToolWindows(props: ToolWindowsProps): ReactElement {
         {tabIndex === 1 && <SerialMonitorToolbar />}
       </Box>
       {tabIndex === 0 && (
-        <Box sx={{ overflowY: 'auto', width: '100%' }}>
+        <Box
+          sx={{
+            overflowY: 'auto',
+            width: '100%',
+            height: '100%',
+            position: 'relative',
+          }}
+        >
           <Typography
             variant="body2"
             component="pre"
             sx={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
               width: '100%',
               height: '100%',
               padding: '8px',
               boxSizing: 'border-box',
               fontSize: props.userData?.outputFontSize || DEFAULT_FONT_SIZE,
+              whiteSpace: 'pre-wrap',
+              wordWrap: 'break-word',
             }}
           >
             {props.output}
