@@ -1,8 +1,8 @@
 import { ReactElement, useState } from 'react';
 import { Box, Tab, Tabs, Typography } from '@mui/material';
-import { DEFAULT_FONT_SIZE, UserData } from '../firebase/UserDataProvider.tsx';
-import { SerialMonitor } from '../monitor/SerialMonitor.tsx';
-import { SerialMonitorToolbar } from '../monitor/SerialMonitorToolbar';
+import { DEFAULT_FONT_SIZE, UserData } from '../providers/UserDataProvider.tsx';
+import { SerialMonitorWindow } from './SerialMonitorWindow.tsx';
+import { SerialMonitorToolbar } from './SerialMonitorToolbar';
 
 type ToolWindowsProps = {
   footerHeight: number;
@@ -70,7 +70,7 @@ export function ToolWindows(props: ToolWindowsProps): ReactElement {
           </Typography>
         </Box>
       )}
-      {tabIndex === 1 && <SerialMonitor />}
+      {tabIndex === 1 && <SerialMonitorWindow />}
     </Box>
   );
 }

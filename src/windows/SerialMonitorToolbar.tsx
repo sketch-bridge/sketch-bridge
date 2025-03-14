@@ -2,11 +2,11 @@ import { Box, Button, MenuItem, Select, TextField } from '@mui/material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import SendIcon from '@mui/icons-material/Send';
-import { useSerialMonitor } from './SerialMonitorProvider';
+import { useSerialMonitor } from '../providers/SerialMonitorProvider';
 import { SerialOptionsDialog } from './SerialOptionsDialog';
 import { useState } from 'react';
 import { isSuccess } from '../FailableResult';
-import { useNotification } from '../utils/NotificationProvider';
+import { useNotification } from '../providers/NotificationProvider';
 
 type SerialMonitorToolbarProps = {};
 

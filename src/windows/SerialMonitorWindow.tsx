@@ -1,11 +1,11 @@
 import { Box, Typography } from '@mui/material';
-import { useSerialMonitor } from './SerialMonitorProvider';
-import { DEFAULT_FONT_SIZE, useUserData } from '../firebase/UserDataProvider';
+import { useSerialMonitor } from '../providers/SerialMonitorProvider';
+import { DEFAULT_FONT_SIZE, useUserData } from '../providers/UserDataProvider';
 import { useEffect, useState } from 'react';
 
 type SerialMonitorProps = {};
 
-export function SerialMonitor(_props: SerialMonitorProps) {
+export function SerialMonitorWindow(_props: SerialMonitorProps) {
   const { readData, outputMode } = useSerialMonitor();
   const { userData } = useUserData();
 

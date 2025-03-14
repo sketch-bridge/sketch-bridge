@@ -16,7 +16,7 @@ import {
   Typography,
 } from '@mui/material';
 import Editor from '@monaco-editor/react';
-import { useFirebaseAuth } from './firebase/FirebaseAuthProvider';
+import { useFirebaseAuth } from './providers/FirebaseAuthProvider';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import {
   MouseEventHandler,
@@ -40,10 +40,10 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { ProjectsDialog } from './projects/ProjectsDialog';
-import { DEFAULT_FONT_SIZE, useUserData } from './firebase/UserDataProvider';
-import { Project, useProjects } from './firebase/ProjectsProvider';
-import { useNotification } from './utils/NotificationProvider';
-import { useLogging } from './firebase/LoggingProvider';
+import { DEFAULT_FONT_SIZE, useUserData } from './providers/UserDataProvider';
+import { Project, useProjects } from './providers/ProjectsProvider';
+import { useNotification } from './providers/NotificationProvider';
+import { useLogging } from './providers/LoggingProvider';
 import { SettingsDialog } from './projects/SettingsDialog';
 import { AboutThisDialog } from './utils/AboutThisDialog';
 import boards from './assets/boards.json';

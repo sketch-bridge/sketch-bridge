@@ -25,7 +25,7 @@ import {
   Library,
   Project,
   useProjects,
-} from '../firebase/ProjectsProvider.tsx';
+} from '../providers/ProjectsProvider.tsx';
 
 type LibrariesDialogProps = {
   isOpen: boolean;
