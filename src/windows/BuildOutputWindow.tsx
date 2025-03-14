@@ -1,4 +1,4 @@
-import { ReactElement } from 'react';
+import { ReactElement, useEffect, useRef } from 'react';
 import { Box, Typography } from '@mui/material';
 import { DEFAULT_FONT_SIZE, UserData } from '../providers/UserDataProvider';
 
@@ -9,6 +9,14 @@ type BuildOutputWindowProps = {
 };
 
 export function BuildOutputWindow(props: BuildOutputWindowProps): ReactElement {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [props.buildOutput]);
+
   return (
     <Box
       sx={{
@@ -18,6 +26,7 @@ export function BuildOutputWindow(props: BuildOutputWindowProps): ReactElement {
         position: 'relative',
         display: props.visible ? 'block' : 'none',
       }}
+      ref={scrollRef}
     >
       <Typography
         variant="body2"
