@@ -71,7 +71,7 @@ export const useBuilder = () => {
 
   return {
     isBuilding,
-    output,
+    buildOutput: output,
     build,
     buildResult,
   };

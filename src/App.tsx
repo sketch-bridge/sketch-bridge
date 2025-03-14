@@ -55,7 +55,7 @@ function App() {
   const firebaseAuth = useFirebaseAuth();
   const { projects, updateProject, refresh } = useProjects();
   const { userData, updateUserData } = useUserData();
-  const { isBuilding, output, build, buildResult } = useBuilder();
+  const { isBuilding, buildOutput, build, buildResult } = useBuilder();
   const { showNotification } = useNotification();
   const { log } = useLogging();
 
@@ -600,7 +600,7 @@ function App() {
         <ToolWindows
           footerHeight={footerHeight}
           userData={userData}
-          output={output}
+          buildOutput={buildOutput}
         />
       </Box>
       <ProjectsDialog
