@@ -32,6 +32,7 @@ interface SerialMonitorContextState {
   setOutputMode: (mode: SerialMonitorOutputMode) => void;
   output: string;
   clear: () => void;
+  write: (data: string) => Promise<FailableResult<ErrorInformation>>;
 }
 
 const SerialMonitorContext = createContext<
@@ -123,6 +124,39 @@ export const SerialMonitorProvider = ({ children }: Props) => {
     setOutput('');
   };
 
+  const write = async (
+    data: string
+  ): Promise<FailableResult<ErrorInformation>> => {
+    if (serialPort === undefined) {
+      return errorResultOf({
+        code: 'no_serial_port',
+        message: 'No serial port selected',
+      });
+    }
+    if (serialPort.writable === null) {
+      return errorResultOf({
+        code: 'port_not_writable',
+        message: 'Port is not writable',
+      });
+    }
+    let writer;
+    try {
+      const encoder = new TextEncoder();
+      const encoded = encoder.encode(data);
+      writer = serialPort.writable.getWriter();
+      await writer.write(encoded);
+      return successResult();
+    } catch (error) {
+      console.error(error);
+      return errorResultOf({
+        code: 'failed_to_write_to_serial_port',
+        message: 'Failed to write to serial port',
+      });
+    } finally {
+      writer && writer.releaseLock();
+    }
+  };
+
   useEffect(() => {
     keepReadingRef.current = keepReading;
   }, [keepReading]);
@@ -210,6 +244,7 @@ export const SerialMonitorProvider = ({ children }: Props) => {
     setOutputMode,
     output,
     clear,
+    write,
   };
   return (
     <SerialMonitorContext.Provider value={value}>

@@ -8,19 +8,24 @@ import {
   useSerialMonitor,
 } from '../providers/SerialMonitorProvider';
 import { SerialOptionsDialog } from './SerialOptionsDialog';
-import { useState } from 'react';
+import { useState, KeyboardEvent } from 'react';
 import { isSuccess } from '../FailableResult';
 import { useNotification } from '../providers/NotificationProvider';
+
+type WriteDataEndOfLineType = 'none' | 'cr' | 'lf' | 'crlf';
 
 type SerialMonitorToolbarProps = {};
 
 export function SerialMonitorToolbar(_props: SerialMonitorToolbarProps) {
-  const { isOpen, open, close, outputMode, setOutputMode, clear } =
+  const { isOpen, open, close, outputMode, setOutputMode, clear, write } =
     useSerialMonitor();
   const { showNotification } = useNotification();
 
   const [isOpenOptionsDialog, setIsOpenOptionsDialog] =
     useState<boolean>(false);
+  const [writeData, setWriteData] = useState<string>('');
+  const [writeDataEndOfLine, setWriteDataEndOfLine] =
+    useState<WriteDataEndOfLineType>('none');
 
   const onClickOpen = async (): Promise<void> => {
     setIsOpenOptionsDialog(true);
@@ -46,6 +51,37 @@ export function SerialMonitorToolbar(_props: SerialMonitorToolbarProps) {
     clear();
   };
 
+  const onClickSend = async (): Promise<void> => {
+    let data = writeData;
+    switch (writeDataEndOfLine) {
+      case 'cr':
+        data += '\r';
+        break;
+      case 'lf':
+        data += '\n';
+        break;
+      case 'crlf':
+        data += '\r\n';
+        break;
+    }
+    const result = await write(data);
+    if (isSuccess(result)) {
+      showNotification('Data sent.', 'success');
+      setWriteData('');
+    } else {
+      showNotification(result.error.message, 'error');
+    }
+  };
+
+  const onKeyDownWriteData = async (
+    event: KeyboardEvent<HTMLInputElement>
+  ): Promise<void> => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      await onClickSend();
+    }
+  };
+
   return (
     <>
       <Box
@@ -63,19 +99,35 @@ export function SerialMonitorToolbar(_props: SerialMonitorToolbarProps) {
             marginRight: '24px',
           }}
         >
-          <TextField size="small" disabled={!isOpen}></TextField>
+          <TextField
+            size="small"
+            disabled={!isOpen}
+            value={writeData}
+            onChange={(event) => setWriteData(event.target.value)}
+            onKeyDown={onKeyDownWriteData}
+          ></TextField>
           <Select
             size="small"
             sx={{ height: '40px' }}
-            value="none"
+            value={writeDataEndOfLine}
             disabled={!isOpen}
+            onChange={(event) =>
+              setWriteDataEndOfLine(
+                event.target.value as WriteDataEndOfLineType
+              )
+            }
           >
             <MenuItem value="none">None</MenuItem>
             <MenuItem value="cr">CR</MenuItem>
             <MenuItem value="lf">LF</MenuItem>
             <MenuItem value="crlf">CRLF</MenuItem>
           </Select>
-          <Button variant="text" startIcon={<SendIcon />} disabled={!isOpen}>
+          <Button
+            variant="text"
+            startIcon={<SendIcon />}
+            disabled={!isOpen}
+            onClick={onClickSend}
+          >
             Send
           </Button>
         </Box>
