@@ -16,7 +16,7 @@ import {
   Typography,
 } from '@mui/material';
 import Editor from '@monaco-editor/react';
-import { useFirebaseAuth } from './firebase/FirebaseAuthProvider.tsx';
+import { useFirebaseAuth } from './providers/FirebaseAuthProvider';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import {
   MouseEventHandler,
@@ -25,10 +25,10 @@ import {
   useEffect,
   useState,
 } from 'react';
-import { useDebounce } from './DebounceHook.ts';
-import { FlashDialog } from './flash/FlashDialog.tsx';
-import { useBuilder } from './build/BuildHook.ts';
-import { LibrariesDialog } from './build/LibrariesDialog.tsx';
+import { useDebounce } from './DebounceHook';
+import { FlashDialog } from './flash/FlashDialog';
+import { useBuilder } from './build/BuildHook';
+import { LibrariesDialog } from './build/LibrariesDialog';
 import BuildIcon from '@mui/icons-material/Build';
 import FlashOnIcon from '@mui/icons-material/FlashOn';
 import LogoutIcon from '@mui/icons-material/Logout';
@@ -39,17 +39,15 @@ import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import SettingsIcon from '@mui/icons-material/Settings';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import { ProjectsDialog } from './projects/ProjectsDialog.tsx';
-import {
-  DEFAULT_FONT_SIZE,
-  useUserData,
-} from './firebase/UserDataProvider.tsx';
-import { Project, useProjects } from './firebase/ProjectsProvider.tsx';
-import { useNotification } from './utils/NotificationProvider.tsx';
-import { useLogging } from './firebase/LoggingProvider.tsx';
-import { SettingsDialog } from './projects/SettingsDialog.tsx';
-import { AboutThisDialog } from './utils/AboutThisDialog.tsx';
+import { ProjectsDialog } from './projects/ProjectsDialog';
+import { DEFAULT_FONT_SIZE, useUserData } from './providers/UserDataProvider';
+import { Project, useProjects } from './providers/ProjectsProvider';
+import { useNotification } from './providers/NotificationProvider';
+import { useLogging } from './providers/LoggingProvider';
+import { SettingsDialog } from './projects/SettingsDialog';
+import { AboutThisDialog } from './utils/AboutThisDialog';
 import boards from './assets/boards.json';
+import { ToolWindows } from './windows/ToolWindows';
 
 function App() {
   // Use custom hooks.
@@ -57,7 +55,7 @@ function App() {
   const firebaseAuth = useFirebaseAuth();
   const { projects, updateProject, refresh } = useProjects();
   const { userData, updateUserData } = useUserData();
-  const { isBuilding, output, build, buildResult } = useBuilder();
+  const { isBuilding, buildOutput, build, buildResult } = useBuilder();
   const { showNotification } = useNotification();
   const { log } = useLogging();
 
@@ -599,36 +597,11 @@ function App() {
         >
           <Box sx={{ width: '60%', border: '2px solid lightgray' }} />
         </Box>
-        <Box
-          sx={{
-            width: '100%',
-            height: footerHeight,
-            display: 'flex',
-            flexDirection: 'column',
-            borderTop: '1px solid lightgray',
-          }}
-        >
-          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-            <Tabs value={0}>
-              <Tab label="Output" />
-            </Tabs>
-          </Box>
-          <Box sx={{ overflowY: 'auto', width: '100%' }}>
-            <Typography
-              variant="body2"
-              component="pre"
-              sx={{
-                width: '100%',
-                height: '100%',
-                padding: '8px',
-                boxSizing: 'border-box',
-                fontSize: userData?.outputFontSize || DEFAULT_FONT_SIZE,
-              }}
-            >
-              {output}
-            </Typography>
-          </Box>
-        </Box>
+        <ToolWindows
+          footerHeight={footerHeight}
+          userData={userData}
+          buildOutput={buildOutput}
+        />
       </Box>
       <ProjectsDialog
         isOpen={isOpenProjectsDialog}

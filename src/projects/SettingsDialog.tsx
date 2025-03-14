@@ -1,7 +1,7 @@
 import {
   DEFAULT_FONT_SIZE,
   useUserData,
-} from '../firebase/UserDataProvider.tsx';
+} from '../providers/UserDataProvider.tsx';
 import {
   Button,
   Dialog,

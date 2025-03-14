@@ -1,4 +1,7 @@
-import { Firebase, firebaseConfigurationByImportMetaEnv } from './Firebase.ts';
+import {
+  Firebase,
+  firebaseConfigurationByImportMetaEnv,
+} from '../firebase/Firebase.ts';
 import {
   createContext,
   FC,

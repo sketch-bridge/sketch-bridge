@@ -13,11 +13,11 @@ import {
   ListItemText,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { useUserData } from '../firebase/UserDataProvider.tsx';
-import { Project, useProjects } from '../firebase/ProjectsProvider.tsx';
+import { useUserData } from '../providers/UserDataProvider.tsx';
+import { Project, useProjects } from '../providers/ProjectsProvider.tsx';
 import { useConfirmDialog } from '../utils/ConfirmDialog.tsx';
-import { useNotification } from '../utils/NotificationProvider.tsx';
-import { useLogging } from '../firebase/LoggingProvider.tsx';
+import { useNotification } from '../providers/NotificationProvider.tsx';
+import { useLogging } from '../providers/LoggingProvider.tsx';
 
 type ProjectsDialogProps = {
   isOpen: boolean;

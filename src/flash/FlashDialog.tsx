@@ -9,12 +9,12 @@ import {
   Typography,
 } from '@mui/material';
 import LinerProgress from '@mui/material/LinearProgress';
-import { useFirebaseAuth } from '../firebase/FirebaseAuthProvider.tsx';
+import { useFirebaseAuth } from '../providers/FirebaseAuthProvider.tsx';
 import { ref, getBlob } from 'firebase/storage';
 import { Optiboot } from './Optiboot.ts';
 import { isError } from '../FailableResult.ts';
-import { useNotification } from '../utils/NotificationProvider.tsx';
-import { Project } from '../firebase/ProjectsProvider.tsx';
+import { useNotification } from '../providers/NotificationProvider.tsx';
+import { Project } from '../providers/ProjectsProvider.tsx';
 import { Binary, Bootloader } from './Bootloader.ts';
 import { UsbDfu } from './UsbDfu.ts';
 
