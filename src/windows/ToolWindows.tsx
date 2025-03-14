@@ -42,13 +42,12 @@ export function ToolWindows(props: ToolWindowsProps): ReactElement {
         </Tabs>
         {tabIndex === 1 && <SerialMonitorToolbar />}
       </Box>
-      {tabIndex === 0 && (
-        <BuildOutputWindow
-          buildOutput={props.buildOutput}
-          userData={props.userData}
-        />
-      )}
-      {tabIndex === 1 && <SerialMonitorWindow />}
+      <BuildOutputWindow
+        buildOutput={props.buildOutput}
+        userData={props.userData}
+        visible={tabIndex === 0}
+      />
+      <SerialMonitorWindow visible={tabIndex === 1} />
     </Box>
   );
 }

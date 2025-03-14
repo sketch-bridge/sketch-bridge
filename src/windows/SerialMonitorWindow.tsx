@@ -1,28 +1,23 @@
 import { Box, Typography } from '@mui/material';
 import { useSerialMonitor } from '../providers/SerialMonitorProvider';
 import { DEFAULT_FONT_SIZE, useUserData } from '../providers/UserDataProvider';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef } from 'react';
 
-type SerialMonitorProps = {};
+type SerialMonitorProps = {
+  visible: boolean;
+};
 
-export function SerialMonitorWindow(_props: SerialMonitorProps) {
-  const { readData, outputMode } = useSerialMonitor();
+export function SerialMonitorWindow(props: SerialMonitorProps) {
+  const { output } = useSerialMonitor();
   const { userData } = useUserData();
 
-  const [output, setOutput] = useState<string>('');
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (readData === undefined) {
-      return;
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-    switch (outputMode) {
-      case 'text':
-        setOutput((previous: string) => {
-          const decoder = new TextDecoder();
-          return previous + decoder.decode(readData);
-        });
-    }
-  }, [readData]);
+  }, [output]);
 
   return (
     <Box
@@ -31,7 +26,9 @@ export function SerialMonitorWindow(_props: SerialMonitorProps) {
         width: '100%',
         height: '100%',
         position: 'relative',
+        display: props.visible ? 'block' : 'none',
       }}
+      ref={scrollRef}
     >
       <Typography
         variant="body2"

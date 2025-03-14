@@ -5,6 +5,7 @@ import { DEFAULT_FONT_SIZE, UserData } from '../providers/UserDataProvider';
 type BuildOutputWindowProps = {
   buildOutput: string;
   userData: UserData | null;
+  visible: boolean;
 };
 
 export function BuildOutputWindow(props: BuildOutputWindowProps): ReactElement {
@@ -15,6 +16,7 @@ export function BuildOutputWindow(props: BuildOutputWindowProps): ReactElement {
         width: '100%',
         height: '100%',
         position: 'relative',
+        display: props.visible ? 'block' : 'none',
       }}
     >
       <Typography

@@ -2,7 +2,11 @@ import { Box, Button, MenuItem, Select, TextField } from '@mui/material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import SendIcon from '@mui/icons-material/Send';
-import { useSerialMonitor } from '../providers/SerialMonitorProvider';
+import ClearIcon from '@mui/icons-material/Clear';
+import {
+  SerialMonitorOutputMode,
+  useSerialMonitor,
+} from '../providers/SerialMonitorProvider';
 import { SerialOptionsDialog } from './SerialOptionsDialog';
 import { useState } from 'react';
 import { isSuccess } from '../FailableResult';
@@ -11,7 +15,8 @@ import { useNotification } from '../providers/NotificationProvider';
 type SerialMonitorToolbarProps = {};
 
 export function SerialMonitorToolbar(_props: SerialMonitorToolbarProps) {
-  const { isOpen, open, close, outputMode, setOutputMode } = useSerialMonitor();
+  const { isOpen, open, close, outputMode, setOutputMode, clear } =
+    useSerialMonitor();
   const { showNotification } = useNotification();
 
   const [isOpenOptionsDialog, setIsOpenOptionsDialog] =
@@ -35,6 +40,10 @@ export function SerialMonitorToolbar(_props: SerialMonitorToolbarProps) {
     isSuccess(result)
       ? showNotification('Monitoring stopped.', 'success')
       : showNotification(result.error.message, 'error');
+  };
+
+  const onClickClear = (): void => {
+    clear();
   };
 
   return (
@@ -83,14 +92,17 @@ export function SerialMonitorToolbar(_props: SerialMonitorToolbarProps) {
             size="small"
             sx={{ height: '40px' }}
             value={outputMode}
-            disabled={!isOpen}
             onChange={(event) =>
-              setOutputMode(event.target.value as 'text' | 'hex')
+              setOutputMode(event.target.value as SerialMonitorOutputMode)
             }
           >
             <MenuItem value="text">Text</MenuItem>
             <MenuItem value="hex">Hex</MenuItem>
+            <MenuItem value="dump">Dump</MenuItem>
           </Select>
+          <Button onClick={onClickClear} startIcon={<ClearIcon />}>
+            Clear
+          </Button>
           {!isOpen && (
             <Button onClick={onClickOpen} startIcon={<VisibilityIcon />}>
               Open

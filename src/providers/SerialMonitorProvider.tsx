@@ -12,6 +12,13 @@ import {
   FailableResult,
   successResult,
 } from '../FailableResult.ts';
+import {
+  convertUint8ArrayToDumpString,
+  convertUint8ArrayToHexStrings,
+} from '../utils/ArrayUtils';
+
+export const serialMonitorOutputModes = ['text', 'hex', 'dump'] as const;
+export type SerialMonitorOutputMode = (typeof serialMonitorOutputModes)[number];
 
 interface Props {
   children: ReactNode;
@@ -21,9 +28,10 @@ interface SerialMonitorContextState {
   isOpen: boolean;
   open: (options: SerialOptions) => Promise<FailableResult<ErrorInformation>>;
   close: () => Promise<FailableResult<ErrorInformation>>;
-  readData: Uint8Array<ArrayBufferLike> | undefined;
-  outputMode: 'text' | 'hex';
-  setOutputMode: (mode: 'text' | 'hex') => void;
+  outputMode: SerialMonitorOutputMode;
+  setOutputMode: (mode: SerialMonitorOutputMode) => void;
+  output: string;
+  clear: () => void;
 }
 
 const SerialMonitorContext = createContext<
@@ -39,12 +47,12 @@ export const SerialMonitorProvider = ({ children }: Props) => {
     ReadableStreamDefaultReader<Uint8Array> | undefined
   >(undefined);
   const [keepReading, setKeepReading] = useState<boolean>(false);
-  const [readData, setReadData] = useState<
-    Uint8Array<ArrayBufferLike> | undefined
-  >(undefined);
-  const [outputMode, setOutputMode] = useState<'text' | 'hex'>('text');
+  const [outputMode, setOutputMode] = useState<SerialMonitorOutputMode>('text');
+  const [output, setOutput] = useState<string>('');
 
   const keepReadingRef = useRef<boolean>(keepReading);
+  const readDataRef = useRef<Uint8Array | undefined>(undefined);
+  const outputModeRef = useRef<SerialMonitorOutputMode>(outputMode);
 
   const open = async (
     options: SerialOptions
@@ -66,6 +74,7 @@ export const SerialMonitorProvider = ({ children }: Props) => {
       }
       setSerialPort(port);
       setSerialReader(port.readable.getReader());
+      setOutput('');
       setIsOpen(true);
       // Start reading from the serial port
       setKeepReading(true);
@@ -76,7 +85,7 @@ export const SerialMonitorProvider = ({ children }: Props) => {
       setSerialPort(undefined);
       setSerialReader(undefined);
       setIsOpen(false);
-      setReadData(undefined);
+      readDataRef.current = undefined;
       return errorResultOf({
         code: 'failed_to_open_serial_monitor',
         message: 'Failed to open serial monitor',
@@ -98,9 +107,7 @@ export const SerialMonitorProvider = ({ children }: Props) => {
           message: 'No serial port selected',
         });
       }
-      console.log('Set keepReading to false');
       setKeepReading(false);
-      console.log('Cancel serial reader');
       await serialReader.cancel();
       return successResult();
     } catch (error) {
@@ -112,10 +119,17 @@ export const SerialMonitorProvider = ({ children }: Props) => {
     }
   };
 
+  const clear = (): void => {
+    setOutput('');
+  };
+
   useEffect(() => {
     keepReadingRef.current = keepReading;
-    console.log(`keepReadingRef.current: ${keepReadingRef.current}`);
   }, [keepReading]);
+
+  useEffect(() => {
+    outputModeRef.current = outputMode;
+  });
 
   useEffect(() => {
     if (serialPort === undefined) {
@@ -137,17 +151,34 @@ export const SerialMonitorProvider = ({ children }: Props) => {
       if (!keepReadingRef.current) {
         return;
       }
-      console.log(`readUntilClosed called: ${new Date().getTime()}`);
       while (keepReadingRef.current && isActive) {
-        console.log(`Reading from serial port: ${keepReadingRef.current}`);
         try {
           while (true) {
-            console.log('Reading from serial port...');
             const { value, done } = await serialReader.read();
+            if (value !== undefined) {
+              readDataRef.current = value;
+              setOutput((previous: string) => {
+                switch (outputModeRef.current) {
+                  case 'text':
+                    const decoder = new TextDecoder();
+                    return previous + decoder.decode(value);
+                  case 'hex':
+                    return (
+                      previous + ' ' + convertUint8ArrayToHexStrings(value)
+                    );
+                  case 'dump':
+                    return (
+                      previous +
+                      ' ' +
+                      convertUint8ArrayToDumpString(value) +
+                      '\n'
+                    );
+                }
+              });
+            }
             if (done) {
               break;
             }
-            setReadData(value);
           }
         } catch (error) {
           console.error(error);
@@ -157,12 +188,11 @@ export const SerialMonitorProvider = ({ children }: Props) => {
           serialReader.releaseLock();
         }
       }
-      console.log('Closing serial port');
       await serialPort.close();
       setSerialPort(undefined);
       setSerialReader(undefined);
       setIsOpen(false);
-      setReadData(undefined);
+      readDataRef.current = undefined;
     };
 
     void readUntilClosed();
@@ -176,9 +206,10 @@ export const SerialMonitorProvider = ({ children }: Props) => {
     isOpen,
     open,
     close,
-    readData,
     outputMode,
     setOutputMode,
+    output,
+    clear,
   };
   return (
     <SerialMonitorContext.Provider value={value}>
