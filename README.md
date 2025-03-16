@@ -1,50 +1,25 @@
-# React + TypeScript + Vite
+# SKetch Bridge
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Sketch Bridge is a web application that serves as a firmware development environment for Arduino. Like the Arduino IDE, it allows users to write programs, build them, and directly upload and flash the firmware to an Arduino board.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Code Editor**: Write and edit code in a web-based code editor.
+- **Build**: Compile the code to check for errors.
+- **Flash**: Flash the compiled code to an Arduino board.
+- **Serial Monitor**: Monitor the serial output of the Arduino board.
+- **User Authentication**: Create an account and log in to save projects with Google account.
+- **Project Management**: Save and load projects.
 
-## Expanding the ESLint configuration
+## Supported Boards
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+- Arduino UNO R3
+- Arduino UNO R4 Minima
 
-- Configure the top-level `parserOptions` property like this:
+## Contributing
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+See: [CONTRIBUTING.md](CONTRIBUTING.md)
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+## License
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
-
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+This project is licensed under the Sketch Bridge License - see the [LICENSE](LICENSE) file for details.
