@@ -6,5 +6,13 @@
   {
     "name": "Arduino UNO R4 Minima",
     "fqbn": "arduino:renesas_uno:minima"
+  },
+  {
+    "name": "Raspberry Pi Pico",
+    "fqbn": "rp2040:rp2040:rpipico"
+  },
+  {
+    "name": "Raspberry Pi Pico W",
+    "fqbn": "rp2040:rp2040:rpipicow"
   }
 ]

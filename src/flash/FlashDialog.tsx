@@ -17,18 +17,22 @@ import { useNotification } from '../providers/NotificationProvider.tsx';
 import { Project } from '../providers/ProjectsProvider.tsx';
 import { Binary, Bootloader } from './Bootloader.ts';
 import { UsbDfu } from './UsbDfu.ts';
+import { FileCopy } from './FileCopy';
 
-type BootloaderType = 'optiboot' | 'usbdfu';
+type BootloaderType = 'optiboot' | 'usbdfu' | 'filecopy';
 
 const bootloaders: Record<BootloaderType, { writer: Bootloader; ext: string }> =
   {
     optiboot: { writer: new Optiboot(), ext: 'hex' },
     usbdfu: { writer: new UsbDfu(), ext: 'bin' },
+    filecopy: { writer: new FileCopy(), ext: 'uf2' },
   };
 
 const fqbnToBootloaderMap: Record<string, BootloaderType> = {
   'arduino:avr:uno': 'optiboot',
   'arduino:renesas_uno:minima': 'usbdfu',
+  'rp2040:rp2040:rpipico': 'filecopy',
+  'rp2040:rp2040:rpipicow': 'filecopy',
 };
 
 type FlashDialogProps = {
@@ -75,6 +79,12 @@ export function FlashDialog(props: FlashDialogProps): ReactElement {
         case 'bin':
           setBinary({
             type: 'bin',
+            data: new Uint8Array(await blob.arrayBuffer()),
+          });
+          break;
+        case 'uf2':
+          setBinary({
+            type: 'uf2',
             data: new Uint8Array(await blob.arrayBuffer()),
           });
           break;
