@@ -10,12 +10,19 @@ type BinBinary = {
   data: Uint8Array;
 };
 
-export type Binary = HexBinary | BinBinary;
+type Uf2Binary = {
+  type: 'uf2';
+  data: Uint8Array;
+};
+
+export type Binary = HexBinary | BinBinary | Uf2Binary;
 
 export const isHexBinary = (binary: Binary): binary is HexBinary =>
   binary.type === 'hex';
 export const isBinBinary = (binary: Binary): binary is BinBinary =>
   binary.type === 'bin';
+export const isUf2Binary = (binary: Binary): binary is Uf2Binary =>
+  binary.type === 'uf2';
 
 export abstract class Bootloader {
   abstract init(): Promise<void>;

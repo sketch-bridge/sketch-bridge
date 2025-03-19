@@ -15,6 +15,8 @@ Sketch Bridge is a web application that serves as a firmware development environ
 
 - Arduino UNO R3
 - Arduino UNO R4 Minima
+- Raspberry Pi Pico
+- Raspberry Pi Pico W
 
 ## Contributing
 
