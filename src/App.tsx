@@ -1,5 +1,6 @@
 import './App.scss';
 import {
+  Alert,
   AppBar,
   Box,
   Button,
@@ -490,118 +491,159 @@ function App() {
             </Toolbar>
           </AppBar>
         </Box>
-        <Box
-          sx={{
-            flexGrow: 0,
-            height: `calc(100vh - 64px - 16px - ${footerHeight}px)`,
-            borderBottom: '1px solid lightgray',
-            display: 'flex',
-            flexDirection: 'column',
-          }}
-        >
+        {firebaseAuth.user !== null && (
+          <>
+            <Box
+              sx={{
+                flexGrow: 0,
+                height: `calc(100vh - 64px - 16px - ${footerHeight}px)`,
+                borderBottom: '1px solid lightgray',
+                display: 'flex',
+                flexDirection: 'column',
+              }}
+            >
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  borderBottom: '1px solid lightgray',
+                }}
+              >
+                <Tabs value={0}>
+                  <Tab label="Editor" />
+                </Tabs>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: '8px',
+                    marginRight: '16px',
+                  }}
+                >
+                  {firebaseAuth.user !== null && (
+                    <Select
+                      value={currentProject?.fqbn || ''}
+                      sx={{ height: '40px' }}
+                      onChange={onChangeBoard}
+                    >
+                      {boards.map((board) => (
+                        <MenuItem key={board.fqbn} value={board.fqbn}>
+                          {board.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  )}
+                  {firebaseAuth.user !== null && (
+                    <Button
+                      onClick={onClickExport}
+                      startIcon={<FileDownloadIcon />}
+                    >
+                      Export
+                    </Button>
+                  )}
+                  {firebaseAuth.user !== null && (
+                    <Button
+                      onClick={onClickLibraries}
+                      startIcon={<LibraryBooksIcon />}
+                    >
+                      Libraries
+                    </Button>
+                  )}
+                  {firebaseAuth.user !== null && (
+                    <Button
+                      onClick={onClickBuild}
+                      loading={isBuilding}
+                      startIcon={<BuildIcon />}
+                    >
+                      Build
+                    </Button>
+                  )}
+                  {firebaseAuth.user !== null && (
+                    <Button
+                      onClick={onClickFlash}
+                      loading={isBuilding}
+                      startIcon={<FlashOnIcon />}
+                    >
+                      Flash
+                    </Button>
+                  )}
+                </Box>
+              </Box>
+              <Box sx={{ flexGrow: 1 }}>
+                <Editor
+                  defaultLanguage="cpp"
+                  height={`calc(100vh - 64px - 16px - ${footerHeight}px - 50px)`}
+                  value={code}
+                  options={{
+                    minimap: { enabled: false },
+                    wordWrap: 'off',
+                    readOnly: firebaseAuth.user === null,
+                    fontSize: userData?.editorFontSize || DEFAULT_FONT_SIZE,
+                  }}
+                  onChange={onChangeCode}
+                />
+              </Box>
+            </Box>
+            <Box
+              sx={{
+                height: '16px',
+                cursor: 'ns-resize',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center',
+                backgroundColor: '#f9f9f9',
+              }}
+              onMouseDown={onMouseDownResizeHandle}
+            >
+              <Box sx={{ width: '60%', border: '2px solid lightgray' }} />
+            </Box>
+            <ToolWindows
+              footerHeight={footerHeight}
+              userData={userData}
+              buildOutput={buildOutput}
+            />
+          </>
+        )}
+        {firebaseAuth.user === null && (
           <Box
             sx={{
               display: 'flex',
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              borderBottom: '1px solid lightgray',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+              height: `calc(100vh - 64px - 16px)`,
             }}
           >
-            <Tabs value={0}>
-              <Tab label="Editor" />
-            </Tabs>
             <Box
               sx={{
                 display: 'flex',
                 flexDirection: 'row',
                 alignItems: 'center',
-                gap: '8px',
-                marginRight: '16px',
+                gap: '16px',
               }}
             >
-              {firebaseAuth.user !== null && (
-                <Select
-                  value={currentProject?.fqbn || ''}
-                  sx={{ height: '40px' }}
-                  onChange={onChangeBoard}
-                >
-                  {boards.map((board) => (
-                    <MenuItem key={board.fqbn} value={board.fqbn}>
-                      {board.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              )}
-              {firebaseAuth.user !== null && (
-                <Button
-                  onClick={onClickExport}
-                  startIcon={<FileDownloadIcon />}
-                >
-                  Export
-                </Button>
-              )}
-              {firebaseAuth.user !== null && (
-                <Button
-                  onClick={onClickLibraries}
-                  startIcon={<LibraryBooksIcon />}
-                >
-                  Libraries
-                </Button>
-              )}
-              {firebaseAuth.user !== null && (
-                <Button
-                  onClick={onClickBuild}
-                  loading={isBuilding}
-                  startIcon={<BuildIcon />}
-                >
-                  Build
-                </Button>
-              )}
-              {firebaseAuth.user !== null && (
-                <Button
-                  onClick={onClickFlash}
-                  loading={isBuilding}
-                  startIcon={<FlashOnIcon />}
-                >
-                  Flash
-                </Button>
-              )}
+              <Box component="img" src="/icons/72.png" alt="logo" />
+              <Typography variant="h4">Welcome to Sketch Bridge!</Typography>
             </Box>
+            <Typography variant="body1" sx={{ marginBottom: '32px' }}>
+              Please login to start coding.
+            </Typography>
+            <Alert severity="info" sx={{ marginBottom: '32px' }}>
+              Supported Boards: Arduino UNO R3/R4 Minima, Raspberry Pi Pico/Pico
+              W
+            </Alert>
+            <Typography variant="body1">
+              Sketch Bridge is a web application that provides a firmware
+              development environment for Arduino.
+              <br />
+              It allows you to program, build, and flash sketches to a micro
+              controller using only a web browser.
+            </Typography>
           </Box>
-          <Box sx={{ flexGrow: 1 }}>
-            <Editor
-              defaultLanguage="cpp"
-              height={`calc(100vh - 64px - 16px - ${footerHeight}px - 50px)`}
-              value={code}
-              options={{
-                minimap: { enabled: false },
-                wordWrap: 'off',
-                readOnly: firebaseAuth.user === null,
-                fontSize: userData?.editorFontSize || DEFAULT_FONT_SIZE,
-              }}
-              onChange={onChangeCode}
-            />
-          </Box>
-        </Box>
-        <Box
-          sx={{
-            height: '16px',
-            cursor: 'ns-resize',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-            backgroundColor: '#f9f9f9',
-          }}
-          onMouseDown={onMouseDownResizeHandle}
-        >
-          <Box sx={{ width: '60%', border: '2px solid lightgray' }} />
-        </Box>
-        <ToolWindows
-          footerHeight={footerHeight}
-          userData={userData}
-          buildOutput={buildOutput}
-        />
+        )}
       </Box>
       <ProjectsDialog
         isOpen={isOpenProjectsDialog}
