@@ -8,6 +8,7 @@ import {
 import { Binary, Bootloader, isUf2Binary } from './Bootloader';
 
 export class FileCopy extends Bootloader {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private directoryHandle: any | undefined;
 
   async init(): Promise<void> {
@@ -55,6 +56,7 @@ export class FileCopy extends Bootloader {
         baudRate: 1200,
       });
       return successResult();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       if (error.name === 'NotFoundError') {
         return errorResultOf({

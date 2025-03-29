@@ -169,7 +169,7 @@ export class Optiboot extends Bootloader {
         message: 'No reader',
       });
     }
-    let chunks: Uint8Array[] = [];
+    const chunks: Uint8Array[] = [];
     let receivedLength = 0;
     while (receivedLength < length) {
       const { value, done } = await this.reader.read();
@@ -181,7 +181,7 @@ export class Optiboot extends Bootloader {
         receivedLength += value.length;
       }
     }
-    let fullData = new Uint8Array(receivedLength);
+    const fullData = new Uint8Array(receivedLength);
     let offset = 0;
     for (const chunk of chunks) {
       fullData.set(chunk, offset);
@@ -204,7 +204,7 @@ export class Optiboot extends Bootloader {
       });
     }
     await this.writer.write(Uint8Array.from([STK_GET_SYNC, CRC_EOP]));
-    let response = await this.readExactBytes(2);
+    const response = await this.readExactBytes(2);
     if (isError(response)) {
       console.error(
         'Failed to synchronize with the bootloader',
@@ -243,7 +243,7 @@ export class Optiboot extends Bootloader {
     await this.writer.write(
       Uint8Array.from([STK_GET_PARAMETER, 0x81, CRC_EOP])
     );
-    let response = await this.readExactBytes(3);
+    const response = await this.readExactBytes(3);
     if (isError(response)) {
       console.error('Failed to get major version', response.error);
       return errorResultOf({
@@ -279,7 +279,7 @@ export class Optiboot extends Bootloader {
     await this.writer.write(
       Uint8Array.from([STK_GET_PARAMETER, 0x82, CRC_EOP])
     );
-    let response = await this.readExactBytes(3);
+    const response = await this.readExactBytes(3);
     if (isError(response)) {
       console.error('Failed to get minor version', response.error);
       return errorResultOf({
@@ -313,7 +313,7 @@ export class Optiboot extends Bootloader {
       });
     }
     await this.writer.write(Uint8Array.from([STK_READ_SIGN, CRC_EOP]));
-    let response = await this.readExactBytes(5);
+    const response = await this.readExactBytes(5);
     if (isError(response)) {
       console.error('Failed to read signature', response.error);
       return errorResultOf({
@@ -345,7 +345,7 @@ export class Optiboot extends Bootloader {
       });
     }
     await this.writer.write(Uint8Array.from([STK_ENTER_PROGMODE, CRC_EOP]));
-    let response = await this.readExactBytes(2);
+    const response = await this.readExactBytes(2);
     if (isError(response)) {
       console.error('Failed to enter programming mode', response.error);
       return errorResultOf({
@@ -377,7 +377,7 @@ export class Optiboot extends Bootloader {
       });
     }
     await this.writer.write(Uint8Array.from([STK_LEAVE_PROGMODE, CRC_EOP]));
-    let response = await this.readExactBytes(2);
+    const response = await this.readExactBytes(2);
     if (isError(response)) {
       console.error('Failed to leave programming mode', response.error);
       return errorResultOf({
@@ -445,10 +445,10 @@ export class Optiboot extends Bootloader {
       }
 
       const writtenBytes = firmwareBytes.slice(i, i + pageSize);
-      let pageData = writtenBytes.concat(
+      const pageData = writtenBytes.concat(
         new Array(pageSize - writtenBytes.length).fill(0xff)
       );
-      let writeCommand = Uint8Array.from([
+      const writeCommand = Uint8Array.from([
         STK_PROG_PAGE,
         pageSize >> 8,
         pageSize & 0xff,

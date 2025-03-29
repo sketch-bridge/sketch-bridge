@@ -14,9 +14,7 @@ import { useNotification } from '../providers/NotificationProvider';
 
 type WriteDataEndOfLineType = 'none' | 'cr' | 'lf' | 'crlf';
 
-type SerialMonitorToolbarProps = {};
-
-export function SerialMonitorToolbar(_props: SerialMonitorToolbarProps) {
+export function SerialMonitorToolbar() {
   const { isOpen, open, close, outputMode, setOutputMode, clear, write } =
     useSerialMonitor();
   const { showNotification } = useNotification();
@@ -35,16 +33,20 @@ export function SerialMonitorToolbar(_props: SerialMonitorToolbarProps) {
     options: SerialOptions
   ): Promise<void> => {
     const result = await open(options);
-    isSuccess(result)
-      ? showNotification('Monitoring started.', 'success')
-      : showNotification(result.error.message, 'error');
+    if (isSuccess(result)) {
+      showNotification('Monitoring started.', 'success');
+    } else {
+      showNotification(result.error.message, 'error');
+    }
   };
 
   const onClickClose = async (): Promise<void> => {
     const result = await close();
-    isSuccess(result)
-      ? showNotification('Monitoring stopped.', 'success')
-      : showNotification(result.error.message, 'error');
+    if (isSuccess(result)) {
+      showNotification('Monitoring stopped.', 'success');
+    } else {
+      showNotification(result.error.message, 'error');
+    }
   };
 
   const onClickClear = (): void => {
