@@ -72,10 +72,11 @@ export function FlashDialog(props: FlashDialogProps): ReactElement {
       const fileRef = ref(storage, filePath);
       const blob = await getBlob(fileRef);
       switch (bootloader.ext) {
-        case 'hex':
+        case 'hex': {
           const hex = await blob.text();
           setBinary({ type: 'hex', data: hex });
           break;
+        }
         case 'bin':
           setBinary({
             type: 'bin',

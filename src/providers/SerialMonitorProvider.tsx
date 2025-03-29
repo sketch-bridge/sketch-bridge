@@ -153,7 +153,9 @@ export const SerialMonitorProvider = ({ children }: Props) => {
         message: 'Failed to write to serial port',
       });
     } finally {
-      writer && writer.releaseLock();
+      if (writer) {
+        writer.releaseLock();
+      }
     }
   };
 
@@ -193,9 +195,10 @@ export const SerialMonitorProvider = ({ children }: Props) => {
               readDataRef.current = value;
               setOutput((previous: string) => {
                 switch (outputModeRef.current) {
-                  case 'text':
+                  case 'text': {
                     const decoder = new TextDecoder();
                     return previous + decoder.decode(value);
+                  }
                   case 'hex':
                     return (
                       previous + ' ' + convertUint8ArrayToHexStrings(value)

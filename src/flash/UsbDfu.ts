@@ -335,7 +335,7 @@ export class UsbDfu extends Bootloader {
     data?: Uint8Array
   ): Promise<FailableResult<{ errorMessage: string; cause?: unknown }>> {
     // outputUint8Array('dfuDownload - data', data);
-    let transferOutResult = await usb.controlTransferOut(
+    const transferOutResult = await usb.controlTransferOut(
       DFU_COMMAND.DOWNLOAD,
       this.transaction++,
       data
